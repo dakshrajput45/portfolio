@@ -1,65 +1,125 @@
-import Image from "next/image";
+/* eslint-disable react-hooks/purity */
+"use client";
 
 export default function Home() {
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black">
+      {/* Animated Background Orbs */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-1/2 -left-1/2 h-[200%] w-[200%] animate-spin-slow opacity-30">
+          <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 blur-3xl"></div>
+        </div>
+        <div className="absolute -bottom-1/2 -right-1/2 h-[200%] w-[200%] animate-spin-reverse opacity-30">
+          <div className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-gradient-to-r from-pink-400 to-purple-500 blur-3xl"></div>
+        </div>
+      </div>
+
+      {/* Profile Photo - Top Right */}
+      <div className="absolute top-8 right-8 animate-fade-in-scale z-20 hidden md:block" style={{ animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
+        <div className="profile-frame-top">
+          <div className="profile-image-container-top">
+            <img
+              src="/dp.jpeg"
+              alt="Daksh Rajput"
+              width={250}
+              height={250}
+              className="profile-image"
+            />
+          </div>
+          <div className="profile-badge">
+            <p className="text-base font-bold text-white">Daksh Rajput</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Profile Photo - Mobile (Top Center) */}
+      <div className="absolute top-6 left-3/4 -translate-x-1/2 animate-fade-in-scale z-20 md:hidden" style={{ animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
+        <div className="profile-frame-mobile-round">
+          <div className="profile-image-container-mobile-round">
+            <img
+              src="/dp.jpeg"
+              alt="Daksh Rajput"
+              width={100}
+              height={100}
+              className="profile-image"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Floating Particles */}
+      {[...Array(30)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute animate-float opacity-20"
+          style={{
+            // eslint-disable-next-line react-hooks/purity
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 5}s`,
+            animationDuration: `${5 + Math.random() * 10}s`,
+          }}
+        >
+          <div 
+            className="h-2 w-2 rounded-full bg-white"
+            style={{
+              transform: `scale(${0.5 + Math.random()})`,
+            }}
+          ></div>
+        </div>
+      ))}
+
+      {/* Main Content - Centered */}
+      <div className="relative z-10 flex items-center justify-center text-center px-4 w-full h-full">
+        {/* Rotating Ring */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          <div className="h-[300px] w-[300px] md:h-[500px] md:w-[500px] animate-spin-slow rounded-full border-4 border-dashed border-pink-300/30"></div>
+        </div>
+        
+        {/* Pulsing Ring */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          <div className="h-[240px] w-[240px] md:h-[400px] md:w-[400px] animate-pulse-slow rounded-full border-2 border-purple-300/20"></div>
+        </div>
+
+        {/* Hi Cutie with Emoji - Hover Animation - Absolutely Centered */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-fade-in-scale group cursor-pointer">
+          <h1 className="font-sans text-4xl sm:text-7xl md:text-7xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text flex items-center gap-3 md:gap-4 transition-transform duration-300 group-hover:scale-110 whitespace-nowrap">
+            Hi cutie 💖
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+        </div>
+      </div>
+
+      {/* Bottom Waves */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 opacity-20">
+        <svg className="h-full w-full" viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path 
+            d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+            className="fill-pink-500/30 animate-wave"
+          ></path>
+        </svg>
+      </div>
+
+      {/* Bottom Footer Links */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-20 px-4">
+        <div className="animate-fade-in-scale" style={{ animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards' }}>
+          <p className="text-sm md:text-base font-light text-gray-400 italic">Building at 4 AM ☕</p>
+        </div>
+
+        <div className="animate-fade-in-scale" style={{ animationDelay: '0.7s', opacity: 0, animationFillMode: 'forwards' }}>
+          <p className="text-xs md:text-sm text-gray-300 text-center">
+            Meanwhile, check out my{" "}
+            <a 
+              href="https://www.linkedin.com/in/dakshr264/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 transition-colors"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              LinkedIn
+            </a>
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }

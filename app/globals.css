@@ -24,3 +24,389 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px);
+  }
+  50% {
+    transform: translateY(-40px) translateX(-10px);
+  }
+  75% {
+    transform: translateY(-20px) translateX(5px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+@keyframes wave {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-25px);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shimmer-text {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(10deg);
+  }
+}
+
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.1);
+  }
+}
+
+/* Large Analog Wall Clock Styles */
+.analog-clock-large {
+  width: 500px;
+  height: 500px;
+  position: relative;
+}
+
+.clock-face-large {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+  border: 8px solid #333;
+  box-shadow: 
+    0 0 0 16px rgba(0, 0, 0, 0.8),
+    0 0 50px rgba(139, 92, 246, 0.4),
+    inset 0 0 40px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.hour-marker-large {
+  font-size: 24px;
+  font-weight: bold;
+  color: #888;
+  font-family: 'Arial', sans-serif;
+  text-shadow: 0 0 10px rgba(136, 136, 136, 0.5);
+}
+
+.center-dot-large {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 15;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+}
+
+.clock-hand-large {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom center;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.hour-hand-large {
+  width: 10px;
+  height: 120px;
+  margin-left: -5px;
+  background: linear-gradient(to top, #fff, #aaa);
+  z-index: 12;
+}
+
+.minute-hand-large {
+  width: 8px;
+  height: 160px;
+  margin-left: -4px;
+  background: linear-gradient(to top, #fff, #ccc);
+  z-index: 13;
+}
+
+.second-hand-large {
+  width: 3px;
+  height: 180px;
+  margin-left: -1.5px;
+  background: #ff4444;
+  z-index: 14;
+  box-shadow: 0 0 10px rgba(255, 68, 68, 0.7);
+}
+
+.clock-center-text {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 11;
+  pointer-events: none;
+}
+
+.rotating-ring {
+  width: 700px;
+  height: 700px;
+  border-radius: 50%;
+  border: 4px dashed rgba(236, 72, 153, 0.3);
+  animation: spin-slow 10s linear infinite;
+}
+
+.pulsing-ring {
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  border: 2px solid rgba(216, 180, 254, 0.2);
+  animation: pulse-slow 2s ease-in-out infinite;
+}
+
+/* Profile Photo Styles - Top Right (Desktop) */
+.profile-frame-top {
+  position: relative;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(236, 72, 153, 0.25));
+  border: 4px solid rgba(139, 92, 246, 0.5);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 
+    0 0 40px rgba(139, 92, 246, 0.4),
+    inset 0 0 25px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+.profile-frame-top:hover {
+  transform: scale(1.05);
+  box-shadow: 
+    0 0 60px rgba(139, 92, 246, 0.6),
+    inset 0 0 30px rgba(0, 0, 0, 0.7);
+}
+
+.profile-image-container-top {
+  width: 250px;
+  height: 250px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 4px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+  background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+}
+
+/* Profile Photo Styles - Mobile (Round/Circular) */
+.profile-frame-mobile-round {
+  position: relative;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.3));
+  border: 3px solid rgba(139, 92, 246, 0.6);
+  border-radius: 50%;
+  padding: 8px;
+  box-shadow: 
+    0 0 35px rgba(139, 92, 246, 0.5),
+    inset 0 0 20px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.profile-frame-mobile-round:active {
+  transform: scale(0.95);
+}
+
+.profile-image-container-mobile-round {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.7);
+  background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+}
+
+/* Legacy Mobile Styles */
+.profile-frame-mobile {
+  position: relative;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(236, 72, 153, 0.25));
+  border: 3px solid rgba(139, 92, 246, 0.5);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 
+    0 0 30px rgba(139, 92, 246, 0.4),
+    inset 0 0 20px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+}
+
+.profile-image-container-mobile {
+  width: 150px;
+  height: 150px;
+  border-radius: 15px;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.6);
+  background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+}
+
+.profile-badge-mobile {
+  margin-top: 10px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 6px;
+  border-radius: 8px;
+}
+
+/* Legacy styles for backward compatibility */
+.profile-frame {
+  position: relative;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2));
+  border: 3px solid rgba(139, 92, 246, 0.4);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 
+    0 0 30px rgba(139, 92, 246, 0.3),
+    inset 0 0 20px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.profile-image-container {
+  width: 200px;
+  height: 200px;
+  border-radius: 15px;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-badge {
+  margin-top: 12px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 8px;
+  border-radius: 10px;
+}
+
+/* Utility classes for animations */
+.animate-float {
+  animation: float linear infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.animate-shimmer-text {
+  background-size: 200% auto;
+  animation: shimmer-text 3s linear infinite;
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 1s ease-out;
+}
+
+.animate-twinkle {
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+.animate-wave {
+  animation: wave 7s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 10s linear infinite;
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse 15s linear infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s ease-in-out infinite;
+}
+
+.animate-float-gentle {
+  animation: float-gentle 3s ease-in-out infinite;
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 0.5s ease-in-out infinite;
+}
