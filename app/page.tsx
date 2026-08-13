@@ -1,8 +1,9 @@
 /* eslint-disable react-hooks/purity */
 "use client";
 
-export default function Home() {
+import SecretUnlock from "./components/SecretUnlock";
 
+export default function Home() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black">
       {/* Animated Background Orbs */}
@@ -16,37 +17,6 @@ export default function Home() {
       </div>
 
       {/* Profile Photo - Top Right */}
-      <div className="absolute top-8 right-8 animate-fade-in-scale z-20 hidden md:block" style={{ animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
-        <div className="profile-frame-top">
-          <div className="profile-image-container-top">
-            <img
-              src="/dp.jpeg"
-              alt="Daksh Rajput"
-              width={250}
-              height={250}
-              className="profile-image"
-            />
-          </div>
-          <div className="profile-badge">
-            <p className="text-base font-bold text-white">Daksh Rajput</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Profile Photo - Mobile (Top Center) */}
-      <div className="absolute top-6 left-3/4 -translate-x-1/2 animate-fade-in-scale z-20 md:hidden" style={{ animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
-        <div className="profile-frame-mobile-round">
-          <div className="profile-image-container-mobile-round">
-            <img
-              src="/dp.jpeg"
-              alt="Daksh Rajput"
-              width={100}
-              height={100}
-              className="profile-image"
-            />
-          </div>
-        </div>
-      </div>
 
       {/* Floating Particles */}
       {[...Array(30)].map((_, i) => (
@@ -83,10 +53,12 @@ export default function Home() {
         </div>
 
         {/* Hi Cutie with Emoji - Hover Animation - Absolutely Centered */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-fade-in-scale group cursor-pointer">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-fade-in-scale group cursor-pointer flex flex-col items-center gap-6">
           <h1 className="font-sans text-4xl sm:text-7xl md:text-7xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text flex items-center gap-3 md:gap-4 transition-transform duration-300 group-hover:scale-110 whitespace-nowrap">
             Hi cutie 💖
           </h1>
+
+          <SecretUnlock />
         </div>
       </div>
 
