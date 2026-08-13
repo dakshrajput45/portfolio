@@ -90,6 +90,24 @@ body {
   }
 }
 
+@keyframes spin-horizontal {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+@keyframes wobble-horizontal {
+  0%, 100% {
+    transform: rotateY(-35deg);
+  }
+  50% {
+    transform: rotateY(35deg);
+  }
+}
+
 @keyframes spin-reverse {
   from {
     transform: rotate(360deg);
@@ -119,6 +137,17 @@ body {
   }
 }
 
+@keyframes dot-pulse {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes float-gentle {
   0%, 100% {
     transform: translateY(0) rotate(0deg);
@@ -128,12 +157,42 @@ body {
   }
 }
 
+@keyframes float-text {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 @keyframes bounce-gentle {
   0%, 100% {
     transform: translateY(0) scale(1);
   }
   50% {
     transform: translateY(-10px) scale(1.1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-8px);
+  }
+  40%, 80% {
+    transform: translateX(8px);
   }
 }
 
@@ -407,6 +466,30 @@ body {
   animation: float-gentle 3s ease-in-out infinite;
 }
 
+.animate-spin-horizontal {
+  animation: spin-horizontal 2.5s linear infinite;
+}
+
+.animate-wobble-horizontal {
+  animation: wobble-horizontal 2.5s ease-in-out infinite;
+}
+
+.animate-float-text {
+  animation: float-text 3.5s ease-in-out infinite;
+}
+
+.animate-dot-pulse {
+  animation: dot-pulse 1.4s ease-in-out infinite;
+}
+
 .animate-bounce-gentle {
   animation: bounce-gentle 0.5s ease-in-out infinite;
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 1.5s ease-out;
 }
