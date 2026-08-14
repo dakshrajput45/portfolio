@@ -6,7 +6,7 @@ import PhotoDetailView from "./PhotoDetailView";
 import ProposalSequence from "./ProposalSequence";
 import RotatableImage from "./RotatableImage";
 import photosData from "../data/photos.json";
-import { proxiedSrc } from "../lib/proxiedSrc";
+import { proxiedSrc, isVideoSrc } from "../lib/proxiedSrc";
 
 const photos = photosData.photos;
 const backgrounds = photosData.backgrounds;
@@ -92,13 +92,6 @@ export default function SecretUnlock() {
   const noPhrases = ["no", "are you sure?", "pkka?", "phrse socho?", "ask your friend once"];
   const noText = noPhrases[Math.min(noClicks, noPhrases.length - 1)];
 
-  const bgVariants = [
-    "from-purple-800 via-purple-950 to-black",
-    "from-pink-800 via-rose-950 to-black",
-    "from-cyan-800 via-blue-950 to-black",
-    "from-amber-800 via-orange-950 to-black",
-    "from-emerald-800 via-teal-950 to-black",
-  ];
   const activeIntroBg = Math.min(noClicks, backgrounds.introBackgrounds.length - 1);
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,8 +145,19 @@ export default function SecretUnlock() {
           style={{ animationFillMode: "forwards" }}
         >
           {backgrounds.acknowledgeBackground.src ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={proxiedSrc(backgrounds.acknowledgeBackground.src)} alt="" className="h-full w-full object-cover" />
+            isVideoSrc(backgrounds.acknowledgeBackground.src) ? (
+              <video
+                src={proxiedSrc(backgrounds.acknowledgeBackground.src)}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={proxiedSrc(backgrounds.acknowledgeBackground.src)} alt="" className="h-full w-full object-cover" />
+            )
           ) : (
             <span className="text-8xl opacity-30">📷</span>
           )}
@@ -178,53 +182,99 @@ export default function SecretUnlock() {
   }
 
   if (unlocked && !showMessage && !revealed) {
-    return createPortal(
-      <div className="fixed inset-0 z-50 flex min-h-screen items-center justify-center overflow-hidden bg-black">
-        {/* Full-screen photo - all slots stacked, crossfading via opacity */}
-        <div className="absolute inset-0 opacity-0 animate-fade-in" style={{ animationFillMode: "forwards" }}>
-          {backgrounds.introBackgrounds.map((bg, i) => (
-            <div
-              key={i}
-              className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br ${bgVariants[i]} transition-opacity duration-1000 ease-in-out ${
-                i === activeIntroBg ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              {bg.src ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={proxiedSrc(bg.src)} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-8xl opacity-30">📷</span>
-              )}
-            </div>
-          ))}
-        </div>
+    const activeBg = backgrounds.introBackgrounds[activeIntroBg];
+    const activeHasPortrait = !!activeBg.src;
+    const activeHasMedia = !activeHasPortrait && !!activeBg.background;
 
-        {/* Darkening overlay for text contrast */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60"></div>
+    const renderActionButtons = (light: boolean) => (
+      <div className="mt-2 flex items-center gap-4">
+        <button
+          onClick={() => setShowMessage(true)}
+          className={
+            light
+              ? "rounded-full bg-pink-500 px-8 py-3 text-lg text-white shadow-md shadow-pink-500/20 transition-colors hover:bg-pink-600 cursor-pointer"
+              : "rounded-full border-2 border-pink-300/50 bg-black/40 px-8 py-3 text-lg text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
+          }
+        >
+          yes 💖
+        </button>
+        {noClicks < noPhrases.length && (
+          <button
+            onClick={() => setNoClicks((n) => n + 1)}
+            className={
+              light
+                ? "rounded-full border-2 border-gray-300 bg-white px-8 py-3 text-lg text-gray-600 transition-colors hover:border-gray-400 hover:bg-gray-50 cursor-pointer"
+                : "rounded-full border-2 border-gray-500/40 bg-black/40 px-8 py-3 text-lg text-gray-300 backdrop-blur-sm transition-colors hover:border-gray-400/60 cursor-pointer"
+            }
+          >
+            {noText}
+          </button>
+        )}
+      </div>
+    );
 
-        <div className="relative z-10 flex flex-col items-center gap-6 px-4 text-center animate-fade-in-scale">
-          <h2 className="font-sans text-3xl sm:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text">
-            Aren&apos;t we cute?
-          </h2>
-          <p className="text-lg sm:text-2xl text-gray-200">
-            Hi baby, do you want to see more of us?
-          </p>
-          <div className="mt-2 flex items-center gap-4">
-            <button
-              onClick={() => setShowMessage(true)}
-              className="rounded-full border-2 border-pink-300/50 bg-black/40 px-8 py-3 text-lg text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
-            >
-              yes 💖
-            </button>
-            {noClicks < noPhrases.length && (
-              <button
-                onClick={() => setNoClicks((n) => n + 1)}
-                className="rounded-full border-2 border-gray-500/40 bg-black/40 px-8 py-3 text-lg text-gray-300 backdrop-blur-sm transition-colors hover:border-gray-400/60 cursor-pointer"
-              >
-                {noText}
-              </button>
+    if (activeHasMedia) {
+      return createPortal(
+        <div className="fixed inset-0 z-50 flex min-h-screen items-center justify-center overflow-hidden bg-black">
+          {/* Full-screen photo - all media slots stacked, crossfading via opacity */}
+          <div className="absolute inset-0 opacity-0 animate-fade-in" style={{ animationFillMode: "forwards" }}>
+            {backgrounds.introBackgrounds.map(
+              (bg, i) =>
+                bg.background && (
+                  <div
+                    key={i}
+                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ease-in-out ${
+                      i === activeIntroBg ? "opacity-100" : "opacity-0"
+                    }`}
+                  >
+                    <RotatableImage src={proxiedSrc(bg.background)} rotate={bg.backgroundRotate} className="h-full w-full object-cover" />
+                  </div>
+                )
             )}
           </div>
+
+          {/* Darkening overlay for text contrast */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60"></div>
+
+          <div className="relative z-10 flex flex-col items-center gap-6 px-4 text-center animate-fade-in-scale">
+            <h2 className="font-sans text-3xl sm:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text">
+              Aren&apos;t we cute?
+            </h2>
+            <p className="text-lg sm:text-2xl text-gray-200">
+              Hi baby, do you want to see more of us?
+            </p>
+            {renderActionButtons(false)}
+          </div>
+        </div>,
+        document.body
+      );
+    }
+
+    return createPortal(
+      <div className="fixed inset-0 z-50 flex min-h-screen flex-col items-center justify-center gap-6 overflow-hidden bg-white px-4">
+        {activeHasPortrait ? (
+          <div
+            className="relative h-[60vh] w-[85vw] max-w-md opacity-0 animate-fade-in-scale"
+            style={{ animationFillMode: "forwards" }}
+          >
+            <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-3xl bg-white shadow-2xl shadow-black/20">
+              <RotatableImage src={proxiedSrc(activeBg.src)} rotate={activeBg.srcRotate} className="h-full w-full object-contain" />
+            </div>
+          </div>
+        ) : (
+          <span className="text-8xl opacity-30">📷</span>
+        )}
+        <div
+          className="flex flex-col items-center gap-6 px-4 text-center opacity-0 animate-fade-in"
+          style={{ animationFillMode: "forwards" }}
+        >
+          <h2 className="font-sans text-3xl sm:text-6xl font-bold tracking-tight text-gray-800">
+            Aren&apos;t we cute?
+          </h2>
+          <p className="text-lg sm:text-2xl text-gray-600">
+            Hi baby, do you want to see more of us?
+          </p>
+          {renderActionButtons(true)}
         </div>
       </div>,
       document.body

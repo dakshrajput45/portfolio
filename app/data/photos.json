@@ -1,90 +1,191 @@
 {
-  "openMeTexts": ["open me", "peek", "tap me", "click me", "see us", "look"],
+  "openMeTexts": [
+    "open me",
+    "peek",
+    "tap me",
+    "click me",
+    "see us",
+    "look"
+  ],
   "proposalSteps": [
-    "look at me",
+    "look at me cutie",
     "i have something for us",
     "But before that i wanna propose which i haven't done yet officially, although i take you as more then a girlfriend. I think this is most software developer thing i could do!!",
     "itna mt sharmaoo or phrse mujhe dekho ek or cheez hai",
     "Thanks for being in my life and making it so much better"
   ],
   "finalMedia": [
-    { "label": "Final thank-you screen background slide 1 (dummy — replace with your own)", "type": "image", "src": "https://images.unsplash.com/photo-1526779259212-939e64788e3c?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZnJlZSUyMGltYWdlc3xlbnwwfHwwfHx8MA%3D%3D" },
-    { "label": "Final thank-you screen background slide 2 (dummy — replace with your own)", "type": "image", "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR81bNIEaGCzdwl2QV5sIrD4JXpsyk1smkr4psQ6MhDvA8lGy5_6Y4sEyk&s=10" },
-    { "label": "Final thank-you screen background slide 3 (dummy — replace with your own)", "type": "video", "src": "https://drive.google.com/file/d/1uTqKzNrWjY60HSxcbwcY9-NqdKlfgqk7/view?usp=drive_link" }
+    {
+      "label": "Final thank-you screen background slide 1 (dummy — replace with your own)",
+      "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786739489/Screenshot_20260415_034937_Snapchat.jpg",
+      "srcRotate": false
+    },
+    {
+      "label": "Final thank-you screen background slide 2 (dummy — replace with your own)",
+      "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786739488/IMG-20260809-WA0011.jpg",
+      "srcRotate": false
+    },
+    {
+      "label": "Final thank-you screen background slide 3 (dummy — replace with your own)",
+      "src": "https://res.cloudinary.com/dpybr0gpi/video/upload/v1786739483/20260807_131656.mp4",
+      "srcRotate": false
+    },
+    {
+      "label": "Final thank-you screen background slide 1 (dummy — replace with your own)",
+      "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737012/Snapchat-1906444039.jpg",
+      "srcRotate": false
+    },
+    {
+      "label": "Final thank-you screen background slide 2 (dummy — replace with your own)",
+      "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737005/20260807_164013.jpg",
+      "srcRotate": false
+    },
+    {
+      "label": "Final thank-you screen background slide 3 (dummy — replace with your own)",
+      "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737010/IMG-20260811-WA0819.jpg",
+      "srcRotate": false
+    },
+    {
+      "label": "Final thank-you screen background slide 3 (dummy — replace with your own)",
+      "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786739491/Screenshot_20260504_212023_Snapchat.jpg",
+      "srcRotate": false
+    }
   ],
   "backgrounds": {
     "introBackgrounds": [
-      { "label": "\"Aren't we cute?\" background #1 (shown first, before any 'no' click)", "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR81bNIEaGCzdwl2QV5sIrD4JXpsyk1smkr4psQ6MhDvA8lGy5_6Y4sEyk&s=10" },
-      { "label": "\"Aren't we cute?\" background #2 (after 1st 'no' click)", "src": "https://images.unsplash.com/photo-1526779259212-939e64788e3c?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZnJlZSUyMGltYWdlc3xlbnwwfHwwfHx8MA%3D%3D" },
-      { "label": "\"Aren't we cute?\" background #3 (after 2nd 'no' click)", "src": "" },
-      { "label": "\"Aren't we cute?\" background #4 (after 3rd 'no' click)", "src": "" },
-      { "label": "\"Aren't we cute?\" background #5 (after 4th 'no' click)", "src": "" }
+      {
+        "label": "\"Aren't we cute?\" background #1 (shown first, before any 'no' click)",
+        "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737010/IMG-20260811-WA0090.jpg",
+        "srcRotate": true,
+        "background": "",
+        "backgroundRotate": false
+      },
+      {
+        "label": "\"Aren't we cute?\" background #2 (after 1st 'no' click)",
+        "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737007/IMG-20260809-WA0019.jpg",
+        "srcRotate": true,
+        "background": "",
+        "backgroundRotate": false
+      },
+      {
+        "label": "\"Aren't we cute?\" background #3 (after 2nd 'no' click)",
+        "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786739488/IMG-20260809-WA0012.jpg",
+        "srcRotate": false,
+        "background": "",
+        "backgroundRotate": false
+      },
+      {
+        "label": "\"Aren't we cute?\" background #4 (after 3rd 'no' click)",
+        "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737009/IMG-20260809-WA0028.jpg",
+        "srcRotate": true,
+        "background": "",
+        "backgroundRotate": false
+      },
+      {
+        "label": "\"Aren't we cute?\" background #5 (after 4th 'no' click)",
+        "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737011/IMG-20260811-WA0696.jpg",
+        "srcRotate": true,
+        "background": "",
+        "backgroundRotate": false
+      },
+      {
+        "label": "\"Aren't we cute?\" background #6 (after 5th 'no' click, once the 'no' phrases run out and only 'yes' remains)",
+        "src": "",
+        "srcRotate": false,
+        "background": "",
+        "backgroundRotate": false
+      }
     ],
     "acknowledgeBackground": {
       "label": "\"yess but you are more cute\" background (shown after clicking yes)",
-      "src": "",
+      "src": "https://res.cloudinary.com/dpybr0gpi/video/upload/v1786739492/Snapchat-1221286985.mp4",
       "caption": "yess but you are more cute"
     },
     "closingCaptions": [
-      "yess but you are more cute",
-      "one of many more to come",
-      "see you in the next one",
-      "until the next memory"
+      {
+        "caption": "one of many more to come",
+        "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786739492/Snapchat-1994708167.jpg",
+        "srcRotate": false,
+        "background": "",
+        "backgroundRotate": false
+      },
+      {
+        "caption": "see you in the next one",
+        "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737006/20260808_165929.jpg",
+        "srcRotate": false,
+        "background": "",
+        "backgroundRotate": false
+      },
+      {
+        "caption": "until the next memory",
+        "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737012/Snapchat-39098471.jpg",
+        "srcRotate": false,
+        "background": "",
+        "backgroundRotate": false
+      }
     ],
     "collageBackgroundVideo": {
       "label": "Background video behind the photo collage grid (Drive link, fetched through /api/photo like the photos above — keep this file small, ideally under ~10MB, since very large videos can be unreliable through the proxy)",
-      "src": "https://drive.google.com/file/d/1uTqKzNrWjY60HSxcbwcY9-NqdKlfgqk7/view?usp=drive_link"
+      "src": "https://res.cloudinary.com/dpybr0gpi/video/upload/v1786737007/Copy_of_Snapchat-635353117.mp4"
     }
   },
   "photos": [
     {
+      "label": "Image 3 — portrait, collage tile 3",
+      "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737009/IMG-20260811-WA0074.jpg",
+      "caption": "Placeholder caption #3 — replace with the real story behind this photo.",
+      "side": "left",
+      "background": "https://res.cloudinary.com/dpybr0gpi/video/upload/v1786737006/20260808_141024.mp4",
+      "backgroundRotate": false,
+      "cardBackground": "#ffffff",
+      "srcRotate": true
+    },
+    {
       "label": "Image 1 — portrait, collage tile 1 (top-left)",
-      "src": "https://drive.google.com/file/d/1RZI1J5SsXQ7KJVWnnARZElf0BcSj_r2W/view?usp=drive_link",
+      "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786739482/1775569583174.png",
       "caption": "This is the story behind this one — where we were, what we were doing, and why it stuck with us. It started as just another ordinary day, the kind you don't expect to remember, but somewhere in between the small talk and the silly jokes, it turned into something worth holding onto. Maybe it was the way the light hit just right, or maybe it was just the company, but this moment found its way into the collection of memories that make up us. There's a version of this story we tell often, and a version we keep just for ourselves, and this photo sits somewhere in between the two. Every time we look back at it, it brings back the same warmth, the same laugh, the same feeling of being exactly where we were meant to be. It's one of many more still to come, but this one earned its place here, quietly reminding us why we started keeping track of these moments in the first place.",
-      "orientation": "portrait",
-      "backgroundVideo": "https://drive.google.com/file/d/1uTqKzNrWjY60HSxcbwcY9-NqdKlfgqk7/view?usp=drive_link",
-      "srcRotate": false,
+      "side": "left",
+      "background": "https://res.cloudinary.com/dpybr0gpi/video/upload/v1786737008/20260809_183449.mp4",
+      "backgroundRotate": false,
+      "srcRotate": true,
+      "cardBackground": "#ffffff"
+    },
+    {
+      "label": "Image 4 — portrait, collage tile 4",
+      "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737010/IMG-20260811-WA0080.jpg",
+      "caption": "Placeholder caption #4 — replace with the real story behind this photo.",
+      "side": "right",
+      "background": "https://res.cloudinary.com/dpybr0gpi/video/upload/v1786739488/20260808_164945.mp4",
+      "backgroundRotate": false,
       "cardBackground": "#ffffff"
     },
     {
       "label": "Image 2 — portrait, collage tile 2",
       "src": "https://drive.google.com/file/d/1gQdJTeBNRvFphLdENNCPtjb3KeYBLsPl/view?usp=drive_link",
       "caption": "Placeholder caption #2 — replace with the real story behind this photo.",
-      "orientation": "portrait",
-      "backgroundVideo": "https://res.cloudinary.com/dpybr0gpi/video/upload/v1786578318/20260808_164013.mp4",
+      "side": "left",
+      "background": "https://res.cloudinary.com/dpybr0gpi/video/upload/v1786578318/20260808_164013.mp4",
+      "backgroundRotate": false,
       "srcRotate": true,
       "cardBackground": "#000000"
     },
     {
-      "label": "Image 3 — portrait, collage tile 3",
-      "src": "",
-      "caption": "Placeholder caption #3 — replace with the real story behind this photo.",
-      "orientation": "portrait",
-       "backgroundVideo": "https://res.cloudinary.com/dpybr0gpi/video/upload/v1786578318/20260808_164013.mp4",
-      "cardBackground": "#ffffff"
-    },
-    {
-      "label": "Image 4 — portrait, collage tile 4",
-      "src": "",
-      "caption": "Placeholder caption #4 — replace with the real story behind this photo.",
-      "orientation": "portrait",
-      "backgroundVideo": "",
-      "cardBackground": "#ffffff"
-    },
-    {
       "label": "Image 5 — portrait, collage tile 5",
-      "src": "",
+      "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737013/Snapchat-489967448.jpg",
       "caption": "Placeholder caption #5 — replace with the real story behind this photo.",
-      "orientation": "portrait",
-      "backgroundVideo": "",
+      "side": "right",
+      "background": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786739490/IMG-20260811-WA0799.jpg",
+      "backgroundRotate": false,
+      "srcRotate": true,
       "cardBackground": "#ffffff"
     },
     {
       "label": "Image 6 — portrait, collage tile 6 (bottom-right)",
-      "src": "",
+      "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786739492/Snapchat-1626249013.jpg",
       "caption": "Placeholder caption #6 — replace with the real story behind this photo.",
-      "orientation": "portrait",
-      "backgroundVideo": "",
+      "side": "right",
+      "background": "https://res.cloudinary.com/dpybr0gpi/video/upload/v1786740323/Snapchat-634094690.mp4",
+      "backgroundRotate": true,
       "cardBackground": "#ffffff"
     }
   ]

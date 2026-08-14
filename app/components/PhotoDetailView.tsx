@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import photosData from "../data/photos.json";
-import { proxiedSrc } from "../lib/proxiedSrc";
+import { proxiedSrc, isVideoSrc } from "../lib/proxiedSrc";
 import RotatableImage from "./RotatableImage";
 
 type PhotoDetailViewProps = {
@@ -33,26 +33,26 @@ function PhotoCard({ src, rotate, background }: { src: string; rotate?: boolean;
 
 export default function PhotoDetailView({ index, onClose }: PhotoDetailViewProps) {
   const [closing, setClosing] = useState(false);
-  const [closingCaption, setClosingCaption] = useState("");
+  const [closingScreen, setClosingScreen] = useState<(typeof backgrounds.closingCaptions)[number] | null>(null);
   const [videoReady, setVideoReady] = useState(false);
   const photo = photos[index] ?? photos[0];
-  const orientation = photo.orientation === "landscape" ? "landscape" : "portrait";
-  const layoutClass = orientation === "landscape" ? "flex-col" : "flex-col md:flex-row";
+  const side = photo.side === "right" ? "right" : "left";
+  const layoutClass = side === "right" ? "flex-col md:flex-row-reverse" : "flex-col md:flex-row";
 
   useEffect(() => {
     if (closing) {
-      const timer = setTimeout(onClose, 1100);
+      const timer = setTimeout(onClose, 2000);
       return () => clearTimeout(timer);
     }
   }, [closing, onClose]);
 
   useEffect(() => {
     const nextPhoto = photos[index + 1];
-    if (!nextPhoto?.backgroundVideo) return;
+    if (!nextPhoto?.background) return;
     const link = document.createElement("link");
     link.rel = "preload";
-    link.as = "video";
-    link.href = proxiedSrc(nextPhoto.backgroundVideo);
+    link.as = isVideoSrc(nextPhoto.background) ? "video" : "image";
+    link.href = proxiedSrc(nextPhoto.background);
     document.head.appendChild(link);
     return () => {
       document.head.removeChild(link);
@@ -60,25 +60,65 @@ export default function PhotoDetailView({ index, onClose }: PhotoDetailViewProps
   }, [index]);
 
   if (closing) {
+    const hasPortrait = !!closingScreen?.src;
+    const hasBackground = !hasPortrait && !!closingScreen?.background;
+
+    if (hasBackground) {
+      return createPortal(
+        <div className="fixed inset-0 z-50 flex min-h-screen items-center justify-center overflow-hidden bg-black">
+          <div
+            className="absolute inset-0 flex items-center justify-center opacity-0 animate-fade-in"
+            style={{ animationFillMode: "forwards" }}
+          >
+            {isVideoSrc(closingScreen!.background) ? (
+              <video
+                src={proxiedSrc(closingScreen!.background)}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={proxiedSrc(closingScreen!.background)} alt="" className="h-full w-full object-cover" />
+            )}
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60"></div>
+          <h2
+            className="relative z-10 px-4 text-center font-sans text-3xl sm:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text opacity-0 animate-fade-in"
+            style={{ animationFillMode: "forwards" }}
+          >
+            {closingScreen?.caption}
+          </h2>
+        </div>,
+        document.body
+      );
+    }
+
     return createPortal(
-      <div className="fixed inset-0 z-50 flex min-h-screen items-center justify-center overflow-hidden bg-black">
-        <div
-          className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-pink-800 via-purple-950 to-black opacity-0 animate-fade-in"
-          style={{ animationFillMode: "forwards" }}
-        >
-          {backgrounds.acknowledgeBackground.src ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={proxiedSrc(backgrounds.acknowledgeBackground.src)} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <span className="text-8xl opacity-30">📷</span>
-          )}
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60"></div>
+      <div className="fixed inset-0 z-50 flex min-h-screen flex-col items-center justify-center gap-6 overflow-hidden bg-white px-4">
+        {hasPortrait ? (
+          <div
+            className="relative h-[60vh] w-[85vw] max-w-md opacity-0 animate-fade-in-scale"
+            style={{ animationFillMode: "forwards" }}
+          >
+            <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-3xl bg-white shadow-2xl shadow-black/20">
+              <RotatableImage
+                src={proxiedSrc(closingScreen!.src)}
+                rotate={closingScreen!.srcRotate}
+                className="h-full w-full object-contain"
+              />
+            </div>
+          </div>
+        ) : (
+          <span className="text-8xl opacity-30">📷</span>
+        )}
         <h2
-          className="relative z-10 px-4 text-center font-sans text-3xl sm:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text opacity-0 animate-fade-in"
+          className="relative z-10 px-4 text-center font-sans text-3xl sm:text-6xl font-bold tracking-tight text-gray-800 opacity-0 animate-fade-in"
           style={{ animationFillMode: "forwards" }}
         >
-          {closingCaption}
+          {closingScreen?.caption}
         </h2>
       </div>,
       document.body
@@ -87,21 +127,40 @@ export default function PhotoDetailView({ index, onClose }: PhotoDetailViewProps
 
   return createPortal(
     <div className={`fixed inset-0 z-50 flex ${layoutClass} overflow-hidden bg-black animate-fade-in`}>
-      {photo.backgroundVideo && (
+      {photo.background && (
         <>
-          <video
-            src={proxiedSrc(photo.backgroundVideo)}
-            autoPlay
-            muted
-            loop
-            playsInline
-            onLoadedData={() => setVideoReady(true)}
-            className={`fixed inset-0 h-full w-full object-cover transition-opacity duration-700 ${
-              videoReady ? "opacity-100" : "opacity-0"
-            }`}
-          />
+          {isVideoSrc(photo.background) ? (
+            <video
+              src={proxiedSrc(photo.background)}
+              autoPlay
+              muted
+              loop
+              playsInline
+              onLoadedData={() => setVideoReady(true)}
+              className={`fixed object-cover transition-opacity duration-700 ${
+                videoReady ? "opacity-100" : "opacity-0"
+              } ${photo.backgroundRotate ? "" : "inset-0 h-full w-full"}`}
+              style={
+                photo.backgroundRotate
+                  ? { top: "50%", left: "50%", width: "100vh", height: "100vw", transform: "translate(-50%, -50%) rotate(-90deg)" }
+                  : undefined
+              }
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={proxiedSrc(photo.background)}
+              alt=""
+              className={`fixed object-cover ${photo.backgroundRotate ? "" : "inset-0 h-full w-full"}`}
+              style={
+                photo.backgroundRotate
+                  ? { top: "50%", left: "50%", width: "100vh", height: "100vw", transform: "translate(-50%, -50%) rotate(-90deg)" }
+                  : undefined
+              }
+            />
+          )}
           <div className="fixed inset-0 bg-black/50"></div>
-          {!videoReady && (
+          {isVideoSrc(photo.background) && !videoReady && (
             <div className="fixed inset-0 z-20 flex items-center justify-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0s" }}></span>
               <span className="h-2.5 w-2.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.2s" }}></span>
@@ -111,24 +170,14 @@ export default function PhotoDetailView({ index, onClose }: PhotoDetailViewProps
         </>
       )}
 
-      {/* Photo - top for landscape, left (top on mobile) for portrait */}
-      <div
-        className={
-          orientation === "landscape"
-            ? "relative z-10 h-[65%] w-full shrink-0 p-[50px]"
-            : "relative z-10 h-2/5 md:h-full w-full shrink-0 md:w-1/2 p-[50px]"
-        }
-      >
+      {/* Photo - top on mobile, left/right on desktop per photo.side */}
+      <div className="relative z-10 h-2/5 md:h-full w-full shrink-0 md:w-1/2 p-[50px]">
         <PhotoCard src={photo.src} rotate={photo.srcRotate} background={photo.cardBackground} />
       </div>
 
-      {/* Text - bottom for landscape, right (bottom on mobile) for portrait */}
+      {/* Text - bottom on mobile, opposite side of photo on desktop */}
       <div
-        className={
-          orientation === "landscape"
-            ? `relative z-10 flex flex-1 w-full flex-col items-center justify-start gap-4 overflow-y-auto px-8 py-10 text-center ${photo.backgroundVideo ? "" : "bg-black"}`
-            : `relative z-10 flex flex-1 md:h-full w-full md:w-1/2 flex-col items-center justify-start gap-4 overflow-y-auto px-8 py-10 text-center ${photo.backgroundVideo ? "" : "bg-black"}`
-        }
+        className={`relative z-10 flex flex-1 md:h-full w-full md:w-1/2 flex-col items-center justify-start gap-4 overflow-y-auto px-8 py-10 text-center ${photo.background ? "" : "bg-black"}`}
       >
         <div className="flex flex-col items-center gap-2 animate-float-text">
           <h2 className="font-sans text-2xl sm:text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text">
@@ -142,8 +191,8 @@ export default function PhotoDetailView({ index, onClose }: PhotoDetailViewProps
 
       <button
         onClick={() => {
-          const captions = backgrounds.closingCaptions;
-          setClosingCaption(captions[Math.floor(Math.random() * captions.length)]);
+          const screens = backgrounds.closingCaptions;
+          setClosingScreen(screens[Math.floor(Math.random() * screens.length)]);
           setClosing(true);
         }}
         aria-label="Back"
