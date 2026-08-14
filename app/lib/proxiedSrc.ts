@@ -5,3 +5,8 @@ export function proxiedSrc(src: string): string {
   }
   return src;
 }
+
+export function isVideoSrc(src: string): boolean {
+  if (!src) return false;
+  return /\.(mp4|webm|mov|m4v|ogv)(\?.*)?$/i.test(src);
+}
