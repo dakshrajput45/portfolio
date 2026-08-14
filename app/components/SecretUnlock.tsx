@@ -240,9 +240,6 @@ export default function SecretUnlock() {
             <h2 className="font-sans text-3xl sm:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text">
               Aren&apos;t we cute?
             </h2>
-            <p className="text-lg sm:text-2xl text-gray-200">
-              Hi baby, do you want to see more of us?
-            </p>
             {renderActionButtons(false)}
           </div>
         </div>,
@@ -252,18 +249,17 @@ export default function SecretUnlock() {
 
     return createPortal(
       <div className="fixed inset-0 z-50 flex min-h-screen flex-col items-center justify-center gap-6 overflow-hidden bg-white px-4">
-        {activeHasPortrait ? (
-          <div
-            className="relative h-[60vh] w-[85vw] max-w-md opacity-0 animate-fade-in-scale"
-            style={{ animationFillMode: "forwards" }}
-          >
-            <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-3xl bg-white shadow-2xl shadow-black/20">
-              <RotatableImage src={proxiedSrc(activeBg.src)} rotate={activeBg.srcRotate} className="h-full w-full object-contain" />
+        <div key={activeIntroBg} className="animate-zoom-out-in">
+          {activeHasPortrait ? (
+            <div className="relative h-[60vh] w-[85vw] max-w-md">
+              <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-3xl bg-white shadow-2xl shadow-black/20">
+                <RotatableImage src={proxiedSrc(activeBg.src)} rotate={activeBg.srcRotate} className="h-full w-full object-contain" />
+              </div>
             </div>
-          </div>
-        ) : (
-          <span className="text-8xl opacity-30">📷</span>
-        )}
+          ) : (
+            <span className="text-8xl opacity-30">📷</span>
+          )}
+        </div>
         <div
           className="flex flex-col items-center gap-6 px-4 text-center opacity-0 animate-fade-in"
           style={{ animationFillMode: "forwards" }}

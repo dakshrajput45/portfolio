@@ -196,6 +196,17 @@ body {
   }
 }
 
+@keyframes zoomOutIn {
+  0% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 /* Large Analog Wall Clock Styles */
 .analog-clock-large {
   width: 500px;
@@ -492,4 +503,8 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 1.5s ease-out;
+}
+
+.animate-zoom-out-in {
+  animation: zoomOutIn 1.2s ease-out;
 }

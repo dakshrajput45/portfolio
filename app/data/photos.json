@@ -76,7 +76,7 @@
       },
       {
         "label": "\"Aren't we cute?\" background #4 (after 3rd 'no' click)",
-        "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737009/IMG-20260809-WA0028.jpg",
+        "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786743318/Snapchat-199163233.jpg",
         "srcRotate": true,
         "background": "",
         "backgroundRotate": false
@@ -84,13 +84,13 @@
       {
         "label": "\"Aren't we cute?\" background #5 (after 4th 'no' click)",
         "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737011/IMG-20260811-WA0696.jpg",
-        "srcRotate": true,
+        "srcRotate": false,
         "background": "",
         "backgroundRotate": false
       },
       {
         "label": "\"Aren't we cute?\" background #6 (after 5th 'no' click, once the 'no' phrases run out and only 'yes' remains)",
-        "src": "",
+        "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786743319/Snapchat-1713102617.jpg",
         "srcRotate": false,
         "background": "",
         "backgroundRotate": false
@@ -119,6 +119,20 @@
       {
         "caption": "until the next memory",
         "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737012/Snapchat-39098471.jpg",
+        "srcRotate": false,
+        "background": "",
+        "backgroundRotate": false
+      },
+      {
+        "caption": "more of us, coming soon",
+        "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786739489/Screenshot_20260415_034937_Snapchat.jpg",
+        "srcRotate": false,
+        "background": "",
+        "backgroundRotate": false
+      },
+      {
+        "caption": "closing this one with a smile",
+        "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786739491/Screenshot_20260504_212023_Snapchat.jpg",
         "srcRotate": false,
         "background": "",
         "backgroundRotate": false
@@ -174,8 +188,8 @@
       "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737013/Snapchat-489967448.jpg",
       "caption": "Placeholder caption #5 — replace with the real story behind this photo.",
       "side": "right",
-      "background": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786739490/IMG-20260811-WA0799.jpg",
-      "backgroundRotate": false,
+      "background": "https://res.cloudinary.com/dpybr0gpi/video/upload/v1786739492/Snapchat-1168184306.mp4",
+      "backgroundRotate": true,
       "srcRotate": true,
       "cardBackground": "#ffffff"
     },
