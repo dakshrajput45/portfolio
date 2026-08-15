@@ -1,0 +1,1 @@
+- Tinder-style like/dislike swipe on life-time-random (phone view): currently just a fun gesture (swipe right = like, left = dislike, heart/X badge + fly-off animation), no persistence. Future idea: turn into an actual game — persist likes somewhere (localStorage or a backend endpoint), build a "liked photos" collection/reel, maybe scoring or a shared game between the two of us.
