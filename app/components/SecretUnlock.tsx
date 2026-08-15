@@ -392,6 +392,10 @@ export default function SecretUnlock() {
       <input
         type="text"
         inputMode="text"
+        autoCapitalize="off"
+        autoCorrect="off"
+        autoComplete="off"
+        spellCheck={false}
         value={code}
         onChange={handleCodeChange}
         placeholder="secret code?"
