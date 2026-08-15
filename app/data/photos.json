@@ -187,9 +187,9 @@
       "label": "Image 5 — portrait, collage tile 5",
       "src": "https://res.cloudinary.com/dpybr0gpi/image/upload/v1786737013/Snapchat-489967448.jpg",
       "caption": "Placeholder caption #5 — replace with the real story behind this photo.",
-      "side": "right",
-      "background": "https://res.cloudinary.com/dpybr0gpi/video/upload/v1786739492/Snapchat-1168184306.mp4",
-      "backgroundRotate": true,
+      "side": "left",
+      "background": "https://res.cloudinary.com/dpybr0gpi/video/upload/v1786739483/20260807_131656.mp4",
+      "backgroundRotate": false,
       "srcRotate": true,
       "cardBackground": "#ffffff"
     },

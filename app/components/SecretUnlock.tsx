@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import PhotoDetailView from "./PhotoDetailView";
 import ProposalSequence from "./ProposalSequence";
+import LifeTimeRandom from "./LifeTimeRandom";
 import RotatableImage from "./RotatableImage";
 import photosData from "../data/photos.json";
 import { proxiedSrc, isVideoSrc } from "../lib/proxiedSrc";
@@ -11,6 +12,10 @@ import { proxiedSrc, isVideoSrc } from "../lib/proxiedSrc";
 const photos = photosData.photos;
 const backgrounds = photosData.backgrounds;
 const openMeTexts = photosData.openMeTexts;
+
+const UNLOCK_CODE = process.env.NEXT_PUBLIC_UNLOCK_CODE || "1725";
+const SHORTCUT_CODE = process.env.NEXT_PUBLIC_SHORTCUT_CODE || "vani";
+const MAX_CODE_LENGTH = Math.max(UNLOCK_CODE.length, SHORTCUT_CODE.length);
 
 function CollageBackgroundVideo({ failed, onError }: { failed: boolean; onError: () => void }) {
   if (!backgrounds.collageBackgroundVideo.src || failed) {
@@ -57,6 +62,7 @@ export default function SecretUnlock() {
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
   const [showProposal, setShowProposal] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
+  const [showLifeTimeRandom, setShowLifeTimeRandom] = useState(false);
 
   useEffect(() => {
     if (!backgrounds.collageBackgroundVideo.src) return;
@@ -95,21 +101,29 @@ export default function SecretUnlock() {
   const activeIntroBg = Math.min(noClicks, backgrounds.introBackgrounds.length - 1);
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, "").slice(0, 4);
+    const value = e.target.value.slice(0, MAX_CODE_LENGTH);
     setCode(value);
 
-    if (value.length === 4) {
-      if (value === "1725") {
-        setUnlocked(true);
-      } else {
-        setShake(true);
-        setTimeout(() => {
-          setCode("");
-          setShake(false);
-        }, 400);
-      }
+    if (value.length === SHORTCUT_CODE.length && value.toLowerCase() === SHORTCUT_CODE.toLowerCase()) {
+      setShowLifeTimeRandom(true);
+      return;
+    }
+    if (value.length === UNLOCK_CODE.length && value === UNLOCK_CODE) {
+      setUnlocked(true);
+      return;
+    }
+    if (value.length === MAX_CODE_LENGTH) {
+      setShake(true);
+      setTimeout(() => {
+        setCode("");
+        setShake(false);
+      }, 400);
     }
   };
+
+  if (showLifeTimeRandom) {
+    return <LifeTimeRandom onClose={() => setShowLifeTimeRandom(false)} />;
+  }
 
   if (unlocked && showArrow && !revealed) {
     return createPortal(
@@ -335,12 +349,18 @@ export default function SecretUnlock() {
             })}
           </div>
 
-          <div className="mt-32 flex justify-center pb-10">
+          <div className="mt-32 flex flex-wrap justify-center gap-4 pb-10">
             <button
               onClick={() => setShowProposal(true)}
               className="rounded-full border-2 border-pink-300/50 bg-black/40 px-8 py-3 text-lg text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
             >
               click me now
+            </button>
+            <button
+              onClick={() => setShowLifeTimeRandom(true)}
+              className="rounded-full border-2 border-pink-300/50 bg-black/40 px-8 py-3 text-lg text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
+            >
+              random moments 💖
             </button>
           </div>
         </div>
@@ -363,11 +383,11 @@ export default function SecretUnlock() {
 
       <input
         type="text"
-        inputMode="numeric"
+        inputMode="text"
         value={code}
         onChange={handleCodeChange}
         placeholder="secret code?"
-        maxLength={4}
+        maxLength={MAX_CODE_LENGTH}
         className={`w-40 sm:w-48 rounded-full border-2 border-pink-300/40 bg-black/40 px-5 py-2 text-center text-lg text-white placeholder-gray-500 tracking-[0.3em] backdrop-blur-sm outline-none transition-colors focus:border-pink-300/80 ${shake ? "animate-shake" : ""}`}
       />
     </>
