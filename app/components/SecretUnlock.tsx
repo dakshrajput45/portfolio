@@ -303,6 +303,16 @@ export default function SecretUnlock() {
         <CollageBackgroundVideo failed={videoFailed} onError={() => setVideoFailed(true)} />
         <div className="fixed inset-0 bg-black/40"></div>
 
+        <button
+          onClick={() => {
+            setLifeTimeRandomCode(UNLOCK_CODE);
+            setShowLifeTimeRandom(true);
+          }}
+          className="fixed top-4 right-4 sm:top-6 sm:right-6 z-20 rounded-full border-2 border-pink-300/50 bg-black/50 px-4 py-2 text-sm sm:text-base text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
+        >
+          wanna see life, baby? 💖
+        </button>
+
         <div className="relative z-10 mx-auto max-w-[1200px] animate-fade-in-scale">
           <h2 className="mb-10 text-center font-sans text-3xl sm:text-5xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text">
             1725 💖
@@ -359,15 +369,6 @@ export default function SecretUnlock() {
               className="rounded-full border-2 border-pink-300/50 bg-black/40 px-8 py-3 text-lg text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
             >
               click me now
-            </button>
-            <button
-              onClick={() => {
-                setLifeTimeRandomCode(UNLOCK_CODE);
-                setShowLifeTimeRandom(true);
-              }}
-              className="rounded-full border-2 border-pink-300/50 bg-black/40 px-8 py-3 text-lg text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
-            >
-              random moments 💖
             </button>
           </div>
         </div>

@@ -20,6 +20,51 @@ function sampleDistinct<T>(items: T[], n: number): T[] {
   return result;
 }
 
+function shuffle<T>(items: T[]): T[] {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+// Splits the time-sorted pool into buckets spanning the whole history and
+// draws roughly one pick per bucket, so higher randomness spreads the batch
+// across different points in time instead of risking a same-day clump.
+function bucketedSample(sortedByTime: DriveFile[], n: number, randomness: number): DriveFile[] {
+  const r = Math.min(100, Math.max(0, randomness)) / 100;
+  const numBuckets = Math.max(1, Math.min(n, sortedByTime.length, Math.round(1 + r * (n - 1))));
+
+  if (numBuckets <= 1 || sortedByTime.length === 0) {
+    return sampleDistinct(sortedByTime, n);
+  }
+
+  const bucketSize = Math.ceil(sortedByTime.length / numBuckets);
+  const buckets: DriveFile[][] = [];
+  for (let i = 0; i < numBuckets; i++) {
+    buckets.push(sortedByTime.slice(i * bucketSize, (i + 1) * bucketSize));
+  }
+
+  const picksPerBucket = new Array(numBuckets).fill(0);
+  for (let i = 0; i < n; i++) picksPerBucket[i % numBuckets]++;
+
+  const result: DriveFile[] = [];
+  const usedIds = new Set<string>();
+  buckets.forEach((bucket, i) => {
+    const picked = sampleDistinct(bucket, picksPerBucket[i]);
+    picked.forEach((f) => usedIds.add(f.id));
+    result.push(...picked);
+  });
+
+  if (result.length < n) {
+    const remaining = sortedByTime.filter((f) => !usedIds.has(f.id));
+    result.push(...sampleDistinct(remaining, n - result.length));
+  }
+
+  return shuffle(result).slice(0, n);
+}
+
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
 
@@ -62,13 +107,27 @@ export async function GET(request: NextRequest) {
     files = files.filter((f) => new Date(f.createdTime).getTime() >= cutoff);
   }
 
+  const isAllFilter = filter === "all" && !hasCustomRange;
+
   let picked: DriveFile[];
-  if (filter === "newest" && !hasCustomRange) {
-    picked = [...files]
-      .sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime())
-      .slice(0, n);
+  if (isAllFilter) {
+    const rawRandomness = parseInt(params.get("randomness") || "0", 10);
+    const randomness = Number.isFinite(rawRandomness) ? Math.min(100, Math.max(0, rawRandomness)) : 0;
+    if (randomness <= 0) {
+      picked = sampleDistinct(files, n);
+    } else {
+      const sortedByTime = [...files].sort(
+        (a, b) => new Date(a.createdTime).getTime() - new Date(b.createdTime).getTime()
+      );
+      picked = bucketedSample(sortedByTime, n, randomness);
+    }
   } else {
-    picked = sampleDistinct(files, n);
+    const sorted = [...files].sort(
+      (a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime()
+    );
+    const rawOffset = parseInt(params.get("offset") || "0", 10);
+    const offset = sorted.length && Number.isFinite(rawOffset) ? ((rawOffset % sorted.length) + sorted.length) % sorted.length : 0;
+    picked = [...sorted.slice(offset), ...sorted.slice(0, offset)].slice(0, n);
   }
 
   const code = encodeURIComponent(params.get("code")!);
