@@ -62,13 +62,18 @@ export async function GET(request: NextRequest) {
     files = files.filter((f) => new Date(f.createdTime).getTime() >= cutoff);
   }
 
+  const isAllFilter = filter === "all" && !hasCustomRange;
+
   let picked: DriveFile[];
-  if (filter === "newest" && !hasCustomRange) {
-    picked = [...files]
-      .sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime())
-      .slice(0, n);
-  } else {
+  if (isAllFilter) {
     picked = sampleDistinct(files, n);
+  } else {
+    const sorted = [...files].sort(
+      (a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime()
+    );
+    const rawOffset = parseInt(params.get("offset") || "0", 10);
+    const offset = sorted.length && Number.isFinite(rawOffset) ? ((rawOffset % sorted.length) + sorted.length) % sorted.length : 0;
+    picked = [...sorted.slice(offset), ...sorted.slice(0, offset)].slice(0, n);
   }
 
   const code = encodeURIComponent(params.get("code")!);
