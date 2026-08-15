@@ -102,6 +102,12 @@ export default function LifeTimeRandom({
           const data = await res.json();
           const fetched = data.photos as Omit<Photo, "rotation">[];
           setPhotos(fetched.map((p) => ({ ...p, rotation: 0 })));
+          fetched.forEach((p) => {
+            if (!p.isVideo) {
+              const img = new window.Image();
+              img.src = p.src;
+            }
+          });
           setCurrentIndex(0);
           setBatch((b) => b + 1);
           setPageOffset(isAll ? 0 : offset);
@@ -302,8 +308,8 @@ export default function LifeTimeRandom({
   return createPortal(
     <div
       className={`fixed inset-0 z-50 flex flex-col overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 transition-colors duration-300 ${
-        light ? "bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-900" : "bg-black text-white"
-      }`}
+        showSingle ? "justify-center" : ""
+      } ${light ? "bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-900" : "bg-black text-white"}`}
     >
       <div className={`fixed -top-1/2 -left-1/2 h-[200%] w-[200%] animate-spin-slow ${light ? "opacity-10" : "opacity-20"}`}>
         <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-gradient-to-r from-pink-400 to-purple-500 blur-3xl"></div>

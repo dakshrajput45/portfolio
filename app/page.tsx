@@ -1,9 +1,34 @@
-/* eslint-disable react-hooks/purity */
 "use client";
 
+import { useEffect, useState } from "react";
 import SecretUnlock from "./components/SecretUnlock";
 
+interface Particle {
+  left: number;
+  top: number;
+  delay: number;
+  duration: number;
+  scale: number;
+}
+
 export default function Home() {
+  const [particles, setParticles] = useState<Particle[]>([]);
+
+  useEffect(() => {
+    // One-shot randomization after mount, deliberately client-only so SSR
+    // and the initial client render match (avoids a hydration mismatch).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setParticles(
+      Array.from({ length: 30 }, () => ({
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        delay: Math.random() * 5,
+        duration: 5 + Math.random() * 10,
+        scale: 0.5 + Math.random(),
+      }))
+    );
+  }, []);
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black">
       {/* Animated Background Orbs */}
@@ -19,22 +44,21 @@ export default function Home() {
       {/* Profile Photo - Top Right */}
 
       {/* Floating Particles */}
-      {[...Array(30)].map((_, i) => (
+      {particles.map((particle, i) => (
         <div
           key={i}
           className="absolute animate-float opacity-20"
           style={{
-            // eslint-disable-next-line react-hooks/purity
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 5}s`,
-            animationDuration: `${5 + Math.random() * 10}s`,
+            left: `${particle.left}%`,
+            top: `${particle.top}%`,
+            animationDelay: `${particle.delay}s`,
+            animationDuration: `${particle.duration}s`,
           }}
         >
-          <div 
+          <div
             className="h-2 w-2 rounded-full bg-white"
             style={{
-              transform: `scale(${0.5 + Math.random()})`,
+              transform: `scale(${particle.scale})`,
             }}
           ></div>
         </div>
