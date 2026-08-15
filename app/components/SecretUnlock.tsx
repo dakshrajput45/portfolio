@@ -63,6 +63,7 @@ export default function SecretUnlock() {
   const [showProposal, setShowProposal] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
   const [showLifeTimeRandom, setShowLifeTimeRandom] = useState(false);
+  const [lifeTimeRandomCode, setLifeTimeRandomCode] = useState("");
 
   useEffect(() => {
     if (!backgrounds.collageBackgroundVideo.src) return;
@@ -105,6 +106,7 @@ export default function SecretUnlock() {
     setCode(value);
 
     if (value.length === SHORTCUT_CODE.length && value.toLowerCase() === SHORTCUT_CODE.toLowerCase()) {
+      setLifeTimeRandomCode(SHORTCUT_CODE);
       setShowLifeTimeRandom(true);
       return;
     }
@@ -122,7 +124,9 @@ export default function SecretUnlock() {
   };
 
   if (showLifeTimeRandom) {
-    return <LifeTimeRandom onClose={() => setShowLifeTimeRandom(false)} />;
+    return (
+      <LifeTimeRandom accessCode={lifeTimeRandomCode} onClose={() => setShowLifeTimeRandom(false)} />
+    );
   }
 
   if (unlocked && showArrow && !revealed) {
@@ -357,7 +361,10 @@ export default function SecretUnlock() {
               click me now
             </button>
             <button
-              onClick={() => setShowLifeTimeRandom(true)}
+              onClick={() => {
+                setLifeTimeRandomCode(UNLOCK_CODE);
+                setShowLifeTimeRandom(true);
+              }}
               className="rounded-full border-2 border-pink-300/50 bg-black/40 px-8 py-3 text-lg text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
             >
               random moments 💖

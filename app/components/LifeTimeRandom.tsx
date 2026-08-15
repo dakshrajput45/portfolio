@@ -233,7 +233,13 @@ async function sharePhoto(photo: Photo) {
   window.open(photo.src, "_blank");
 }
 
-export default function LifeTimeRandom({ onClose }: { onClose: () => void }) {
+export default function LifeTimeRandom({
+  accessCode,
+  onClose,
+}: {
+  accessCode: string;
+  onClose: () => void;
+}) {
   const [n, setN] = useState(DEFAULT_N);
   const [nInput, setNInput] = useState(String(DEFAULT_N));
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -267,7 +273,7 @@ export default function LifeTimeRandom({ onClose }: { onClose: () => void }) {
       setLoading(true);
       setError(null);
       try {
-        const qs = new URLSearchParams({ n: String(count) });
+        const qs = new URLSearchParams({ n: String(count), code: accessCode });
         if (start || end) {
           if (start) qs.set("startDate", start);
           if (end) qs.set("endDate", end);
@@ -288,7 +294,7 @@ export default function LifeTimeRandom({ onClose }: { onClose: () => void }) {
         setLoading(false);
       }
     },
-    []
+    [accessCode]
   );
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { DriveFile, listFolderFiles } from "@/app/lib/googleDrive";
+import { isValidAccessCode } from "@/app/lib/accessCode";
 
 const MIN_N = 1;
 const MAX_N = 9;
@@ -21,6 +22,11 @@ function sampleDistinct<T>(items: T[], n: number): T[] {
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
+
+  if (!isValidAccessCode(params.get("code"))) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const raw = params.get("n");
   const parsed = raw ? parseInt(raw, 10) : DEFAULT_N;
   const n = Math.min(MAX_N, Math.max(MIN_N, Number.isFinite(parsed) ? parsed : DEFAULT_N));
@@ -65,10 +71,11 @@ export async function GET(request: NextRequest) {
     picked = sampleDistinct(files, n);
   }
 
+  const code = encodeURIComponent(params.get("code")!);
   const photos = picked.map((f) => ({
     id: f.id,
     name: f.name,
-    src: `/api/drive-media?id=${f.id}`,
+    src: `/api/drive-media?id=${f.id}&code=${code}`,
     isVideo: f.mimeType.startsWith("video/"),
   }));
 
