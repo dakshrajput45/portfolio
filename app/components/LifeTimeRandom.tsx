@@ -2,7 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import LifeTimeRandomHeader, { DEFAULT_N, FilterValue, MAX_N, MIN_N } from "./LifeTimeRandomHeader";
+import LifeTimeRandomHeader, {
+  DEFAULT_N,
+  FilterValue,
+  MAX_MASONRY_COLS,
+  MAX_N,
+  MIN_MASONRY_COLS,
+  MIN_N,
+} from "./LifeTimeRandomHeader";
 import LifeTimeRandomSlides, { Photo } from "./LifeTimeRandomSlides";
 
 const SWIPE_THRESHOLD = 50;
@@ -32,11 +39,16 @@ export default function LifeTimeRandom({
   const [exiting, setExiting] = useState<"like" | "dislike" | null>(null);
   const [pageOffset, setPageOffset] = useState(0);
   const [filter, setFilter] = useState<FilterValue>("all");
+  const [randomness, setRandomness] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [slideshow, setSlideshow] = useState(false);
   const [paused, setPaused] = useState(false);
   const [intervalSec, setIntervalSec] = useState(4);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [sharingSelected, setSharingSelected] = useState(false);
+  const [pinterestMode, setPinterestMode] = useState(false);
+  const [masonryCols, setMasonryCols] = useState(3);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const lastFetchParamsRef = useRef<{
@@ -45,6 +57,7 @@ export default function LifeTimeRandom({
     start: string;
     end: string;
     offset: number;
+    randomnessValue: number;
   } | null>(null);
 
   useEffect(() => {
@@ -56,8 +69,15 @@ export default function LifeTimeRandom({
   }, []);
 
   const fetchPhotos = useCallback(
-    async (count: number, filterValue: string, start: string, end: string, offset: number) => {
-      lastFetchParamsRef.current = { count, filterValue, start, end, offset };
+    async (
+      count: number,
+      filterValue: string,
+      start: string,
+      end: string,
+      offset: number,
+      randomnessValue: number
+    ) => {
+      lastFetchParamsRef.current = { count, filterValue, start, end, offset, randomnessValue };
       setLoading(true);
       setError(null);
       const isAll = filterValue === "all" && !start && !end;
@@ -70,6 +90,7 @@ export default function LifeTimeRandom({
         } else {
           qs.set("filter", filterValue);
           if (filterValue !== "all") qs.set("offset", String(offset));
+          else qs.set("randomness", String(randomnessValue));
         }
         return `/api/random-photos?${qs}`;
       })();
@@ -84,6 +105,7 @@ export default function LifeTimeRandom({
           setCurrentIndex(0);
           setBatch((b) => b + 1);
           setPageOffset(isAll ? 0 : offset);
+          setSelectedIds(new Set());
           setLoading(false);
           return;
         } catch {
@@ -100,7 +122,7 @@ export default function LifeTimeRandom({
   );
 
   useEffect(() => {
-    fetchPhotos(DEFAULT_N, "all", "", "", 0);
+    fetchPhotos(DEFAULT_N, "all", "", "", 0, 0);
   }, [fetchPhotos]);
 
   const rotatePhoto = (id: string) => {
@@ -115,17 +137,67 @@ export default function LifeTimeRandom({
     setNInput(String(clamped));
   };
 
+  const updateMasonryCols = (value: number) => {
+    setMasonryCols(Math.min(MAX_MASONRY_COLS, Math.max(MIN_MASONRY_COLS, value)));
+  };
+
+  const selectAllPhotos = () => {
+    if (selectedIds.size === photos.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(photos.map((p) => p.id)));
+    }
+  };
+
+  const toggleSelectPhoto = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const shareSelectedPhotos = async () => {
+    const selected = photos.filter((p) => selectedIds.has(p.id));
+    if (selected.length === 0) return;
+    setSharingSelected(true);
+    try {
+      const files = await Promise.all(
+        selected.map(async (p) => {
+          const res = await fetch(p.src);
+          const blob = await res.blob();
+          return new File([blob], p.name, { type: blob.type });
+        })
+      );
+
+      if (navigator.canShare?.({ files })) {
+        await navigator.share({ files });
+        setSharingSelected(false);
+        return;
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setSharingSelected(false);
+        return;
+      }
+      console.error("Multi-share failed:", err);
+    }
+    selected.forEach((p) => window.open(p.src, "_blank"));
+    setSharingSelected(false);
+  };
+
   const isAllFilter = filter === "all" && !startDate && !endDate;
   const nextPageOffset = isAllFilter ? 0 : pageOffset + n;
 
   const goPrev = () => setCurrentIndex((i) => (i - 1 + photos.length) % photos.length);
   const goNext = useCallback(() => {
     if (currentIndex >= photos.length - 1) {
-      fetchPhotos(n, filter, startDate, endDate, nextPageOffset);
+      fetchPhotos(n, filter, startDate, endDate, nextPageOffset, randomness);
     } else {
       setCurrentIndex((i) => i + 1);
     }
-  }, [currentIndex, photos.length, fetchPhotos, n, filter, startDate, endDate, nextPageOffset]);
+  }, [currentIndex, photos.length, fetchPhotos, n, filter, startDate, endDate, nextPageOffset, randomness]);
 
   useEffect(() => {
     if (!slideshow || paused || selectedPhoto || loading || photos.length === 0) return;
@@ -133,7 +205,7 @@ export default function LifeTimeRandom({
       if (isNarrow) {
         goNext();
       } else {
-        fetchPhotos(n, filter, startDate, endDate, nextPageOffset);
+        fetchPhotos(n, filter, startDate, endDate, nextPageOffset, randomness);
       }
     }, intervalSec * 1000);
     return () => clearTimeout(timer);
@@ -153,6 +225,7 @@ export default function LifeTimeRandom({
     startDate,
     endDate,
     nextPageOffset,
+    randomness,
   ]);
 
   useEffect(() => {
@@ -224,19 +297,19 @@ export default function LifeTimeRandom({
   const likeOpacity = exiting === "like" ? 1 : Math.min(Math.max(dragX, 0) / 100, 1);
   const dislikeOpacity = exiting === "dislike" ? 1 : Math.min(Math.max(-dragX, 0) / 100, 1);
 
-  const showSingle = isNarrow;
+  const showSingle = isNarrow && !pinterestMode;
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex flex-col overflow-hidden px-3 py-3 sm:px-4 sm:py-4 transition-colors duration-300 ${
+      className={`fixed inset-0 z-50 flex flex-col overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 transition-colors duration-300 ${
         light ? "bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-900" : "bg-black text-white"
       }`}
     >
-      <div className={`absolute -top-1/2 -left-1/2 h-[200%] w-[200%] animate-spin-slow ${light ? "opacity-10" : "opacity-20"}`}>
+      <div className={`fixed -top-1/2 -left-1/2 h-[200%] w-[200%] animate-spin-slow ${light ? "opacity-10" : "opacity-20"}`}>
         <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-gradient-to-r from-pink-400 to-purple-500 blur-3xl"></div>
       </div>
 
-      <div className="relative z-10 mx-auto flex h-full w-full max-w-6xl flex-col items-center gap-4 sm:gap-5">
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col items-center gap-2 pb-10 sm:gap-3">
         <LifeTimeRandomHeader
           light={light}
           onClose={onClose}
@@ -275,17 +348,41 @@ export default function LifeTimeRandom({
           onFilterChange={(value) => {
             setFilter(value);
             setPageOffset(0);
+            if (value !== "custom") {
+              fetchPhotos(n, value, "", "", 0, randomness);
+            }
           }}
           startDate={startDate}
           endDate={endDate}
           onStartDateChange={(value) => {
             setStartDate(value);
             setPageOffset(0);
+            fetchPhotos(n, filter, value, endDate, 0, randomness);
           }}
           onEndDateChange={(value) => {
             setEndDate(value);
             setPageOffset(0);
+            fetchPhotos(n, filter, startDate, value, 0, randomness);
           }}
+          randomness={randomness}
+          onRandomnessChange={setRandomness}
+          selectedCount={selectedIds.size}
+          totalCount={photos.length}
+          onSelectAll={selectAllPhotos}
+          onShareSelected={shareSelectedPhotos}
+          sharingSelected={sharingSelected}
+          isNarrow={isNarrow}
+          isAllFilter={isAllFilter}
+          loading={loading}
+          onFetchAll={() => fetchPhotos(n, "all", "", "", 0, randomness)}
+          onPrevPage={() => fetchPhotos(n, filter, startDate, endDate, pageOffset - n, randomness)}
+          onNextPage={() => fetchPhotos(n, filter, startDate, endDate, pageOffset + n, randomness)}
+          showMasonryCols={photos.length > 3 || pinterestMode}
+          masonryCols={masonryCols}
+          onDecrementMasonryCols={() => updateMasonryCols(masonryCols - 1)}
+          onIncrementMasonryCols={() => updateMasonryCols(masonryCols + 1)}
+          pinterestMode={pinterestMode}
+          onTogglePinterestMode={() => setPinterestMode((v) => !v)}
         />
 
         <LifeTimeRandomSlides
@@ -296,6 +393,7 @@ export default function LifeTimeRandom({
           loading={loading}
           isNarrow={isNarrow}
           showSingle={showSingle}
+          pinterestMode={pinterestMode}
           selectedPhoto={selectedPhoto}
           setSelectedPhoto={setSelectedPhoto}
           onPhotoTap={handlePhotoTap}
@@ -308,10 +406,9 @@ export default function LifeTimeRandom({
           cardDragStyle={cardDragStyle}
           likeOpacity={likeOpacity}
           dislikeOpacity={dislikeOpacity}
-          isAllFilter={isAllFilter}
-          onFetchAll={() => fetchPhotos(n, "all", "", "", 0)}
-          onPrevPage={() => fetchPhotos(n, filter, startDate, endDate, pageOffset - n)}
-          onNextPage={() => fetchPhotos(n, filter, startDate, endDate, pageOffset + n)}
+          selectedIds={selectedIds}
+          onToggleSelectPhoto={toggleSelectPhoto}
+          masonryCols={masonryCols}
         />
       </div>
 
@@ -328,7 +425,7 @@ export default function LifeTimeRandom({
             <button
               onClick={() => {
                 const p = lastFetchParamsRef.current;
-                if (p) fetchPhotos(p.count, p.filterValue, p.start, p.end, p.offset);
+                if (p) fetchPhotos(p.count, p.filterValue, p.start, p.end, p.offset, p.randomnessValue);
               }}
               className="shrink-0 rounded-full bg-gradient-to-r from-pink-400 to-purple-400 px-3 py-1 font-medium text-white cursor-pointer"
             >

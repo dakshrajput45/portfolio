@@ -14,13 +14,18 @@ function RotatablePhoto({
   className,
   muted = true,
   controls = false,
+  natural = false,
+  fitHeight = false,
 }: {
   photo: Photo;
   className: string;
   muted?: boolean;
   controls?: boolean;
+  natural?: boolean;
+  fitHeight?: boolean;
 }) {
   const [loaded, setLoaded] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const src = photo.src;
   const upright = photo.rotation % 180 === 0;
@@ -31,12 +36,73 @@ function RotatablePhoto({
   };
 
   const loader = !loaded && (
-    <div className="absolute inset-0 z-10 flex items-center justify-center gap-2">
-      <span className="h-2 w-2 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0s" }}></span>
-      <span className="h-2 w-2 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.2s" }}></span>
-      <span className="h-2 w-2 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.4s" }}></span>
+    <div className="absolute inset-0 z-10 flex items-center justify-center gap-3">
+      <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0s" }}></span>
+      <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.2s" }}></span>
+      <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.4s" }}></span>
     </div>
   );
+
+  // Natural mode: size the tile to the media's real aspect ratio (scaled to
+  // fill the column width) instead of forcing it into a fixed box, so no
+  // letterboxing. Reuses the same rotated-container-query trick, but the
+  // wrapper's own shape comes from the loaded media's intrinsic dimensions.
+  if (natural) {
+    const effectiveRatio = aspectRatio ? (upright ? aspectRatio : 1 / aspectRatio) : 1;
+    const mediaStyle = {
+      opacity: loaded ? 1 : 0,
+      transition: "opacity 0.3s ease",
+      ...(upright
+        ? { transform: photo.rotation ? `rotate(${photo.rotation}deg)` : undefined }
+        : {
+            width: "100cqh",
+            height: "100cqw",
+            transform: `translate(-50%, -50%) rotate(${photo.rotation}deg)`,
+          }),
+    };
+    const mediaClassName = upright
+      ? `absolute inset-0 h-full w-full object-contain ${className}`
+      : `absolute top-1/2 left-1/2 object-contain ${className}`;
+
+    return (
+      <div
+        className={`relative overflow-hidden ${fitHeight ? "h-full" : "w-full"}`}
+        style={{ aspectRatio: effectiveRatio, containerType: "size" }}
+      >
+        {photo.isVideo ? (
+          <video
+            ref={videoRef}
+            src={src}
+            muted={muted}
+            controls={controls}
+            loop
+            playsInline
+            className={mediaClassName}
+            style={mediaStyle}
+            onLoadedMetadata={(e) => {
+              const v = e.currentTarget;
+              if (v.videoWidth && v.videoHeight) setAspectRatio(v.videoWidth / v.videoHeight);
+            }}
+            onCanPlayThrough={handleVideoReady}
+          />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={src}
+            alt={photo.name}
+            className={mediaClassName}
+            style={mediaStyle}
+            onLoad={(e) => {
+              const img = e.currentTarget;
+              setAspectRatio(img.naturalWidth / img.naturalHeight);
+              handleLoad();
+            }}
+          />
+        )}
+        {loader}
+      </div>
+    );
+  }
 
   if (upright) {
     const style = {
@@ -75,7 +141,7 @@ function RotatablePhoto({
           controls={controls}
           loop
           playsInline
-          className={`absolute top-1/2 left-1/2 object-contain ${className}`}
+          className={`absolute top-1/2 left-1/2 ${className}`}
           style={rotatedStyle}
           onCanPlayThrough={handleVideoReady}
         />
@@ -84,7 +150,7 @@ function RotatablePhoto({
         <img
           src={src}
           alt={photo.name}
-          className={`absolute top-1/2 left-1/2 object-contain ${className}`}
+          className={`absolute top-1/2 left-1/2 ${className}`}
           style={rotatedStyle}
           onLoad={handleLoad}
         />
@@ -114,8 +180,8 @@ function IconButton({
       aria-label={label}
       className={
         light
-          ? "flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border-2 border-pink-400/60 bg-white/70 text-gray-700 backdrop-blur-sm transition-colors hover:border-pink-400 hover:bg-pink-100 cursor-pointer"
-          : "flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border-2 border-pink-300/50 bg-black/50 text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
+          ? "flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full border-2 border-pink-400/60 bg-white/70 text-gray-700 backdrop-blur-sm transition-colors hover:border-pink-400 hover:bg-pink-100 cursor-pointer"
+          : "flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full border-2 border-pink-300/50 bg-black/50 text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
       }
     >
       {children}
@@ -131,6 +197,11 @@ function PhotoTile({
   onSelect,
   className = "",
   style,
+  natural = false,
+  fitHeight = false,
+  objectFit = "contain",
+  selected = false,
+  onToggleSelect,
 }: {
   photo: Photo;
   light: boolean;
@@ -139,26 +210,57 @@ function PhotoTile({
   onSelect: () => void;
   className?: string;
   style?: React.CSSProperties;
+  natural?: boolean;
+  fitHeight?: boolean;
+  objectFit?: "contain" | "cover";
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }) {
   return (
     <div
       onClick={onSelect}
-      className={`group relative min-h-0 min-w-0 cursor-pointer overflow-hidden rounded-3xl shadow-2xl shadow-black/50 ${
+      className={`group relative flex min-h-0 min-w-0 cursor-pointer items-center justify-center overflow-hidden rounded-3xl shadow-2xl shadow-black/50 transition-all ${
         light ? "bg-white" : "bg-black"
-      } ${className}`}
+      } ${selected ? "ring-4 ring-pink-400" : ""} ${className}`}
       style={style}
     >
-      <RotatablePhoto photo={photo} className="h-full w-full object-contain" />
+      <RotatablePhoto
+        photo={photo}
+        className={natural ? "" : `h-full w-full object-${objectFit}`}
+        natural={natural}
+        fitHeight={fitHeight}
+      />
+
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleSelect?.();
+        }}
+        aria-label={selected ? "Deselect photo" : "Select photo"}
+        className={`absolute top-2 left-2 sm:top-3 sm:left-3 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full border-2 backdrop-blur-sm cursor-pointer ${
+          selected
+            ? "border-transparent bg-gradient-to-r from-pink-400 to-purple-400 text-white"
+            : light
+              ? "border-gray-400 bg-white/70"
+              : "border-white/50 bg-black/40"
+        }`}
+      >
+        {selected && (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 sm:h-4 sm:w-4">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+        )}
+      </button>
 
       <div className="absolute bottom-1.5 right-1.5 sm:bottom-3 sm:right-3 flex gap-1.5 sm:gap-2">
         <IconButton onClick={onRotate} label="Rotate photo clockwise" light={light}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 sm:h-4 sm:w-4">
             <path d="M21 12a9 9 0 1 1-3.2-6.9" />
             <path d="M21 3v6h-6" />
           </svg>
         </IconButton>
         <IconButton onClick={onShare} label="Share photo" light={light}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 sm:h-4 sm:w-4">
             <circle cx="18" cy="5" r="3" />
             <circle cx="6" cy="12" r="3" />
             <circle cx="18" cy="19" r="3" />
@@ -231,6 +333,7 @@ interface LifeTimeRandomSlidesProps {
   loading: boolean;
   isNarrow: boolean;
   showSingle: boolean;
+  pinterestMode: boolean;
   selectedPhoto: Photo | null;
   setSelectedPhoto: (photo: Photo | null) => void;
   onPhotoTap: (photo: Photo) => void;
@@ -243,10 +346,9 @@ interface LifeTimeRandomSlidesProps {
   cardDragStyle: React.CSSProperties;
   likeOpacity: number;
   dislikeOpacity: number;
-  isAllFilter: boolean;
-  onFetchAll: () => void;
-  onPrevPage: () => void;
-  onNextPage: () => void;
+  selectedIds: Set<string>;
+  onToggleSelectPhoto: (id: string) => void;
+  masonryCols: number;
 }
 
 export default function LifeTimeRandomSlides({
@@ -257,6 +359,7 @@ export default function LifeTimeRandomSlides({
   loading,
   isNarrow,
   showSingle,
+  pinterestMode,
   selectedPhoto,
   setSelectedPhoto,
   onPhotoTap,
@@ -269,21 +372,19 @@ export default function LifeTimeRandomSlides({
   cardDragStyle,
   likeOpacity,
   dislikeOpacity,
-  isAllFilter,
-  onFetchAll,
-  onPrevPage,
-  onNextPage,
+  selectedIds,
+  onToggleSelectPhoto,
+  masonryCols,
 }: LifeTimeRandomSlidesProps) {
   const rawCols = Math.ceil(Math.sqrt(photos.length || 1));
   const cols = isNarrow ? Math.min(rawCols, 2) : photos.length > 0 && photos.length <= 3 ? photos.length : rawCols;
-  const rows = Math.ceil((photos.length || 1) / cols);
   const currentPhoto = photos[currentIndex];
 
   return (
     <>
-      <div className="relative min-h-0 w-full flex-1">
+      <div className="relative mt-4 w-full sm:mt-4">
         {loading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center gap-2">
+          <div className="absolute inset-0 z-20 flex items-center justify-center gap-2 py-10">
             <span className="h-2.5 w-2.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0s" }}></span>
             <span className="h-2.5 w-2.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.2s" }}></span>
             <span className="h-2.5 w-2.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.4s" }}></span>
@@ -292,7 +393,7 @@ export default function LifeTimeRandomSlides({
 
         {showSingle ? (
           <div
-            className={`relative flex h-full w-full items-center justify-center transition-opacity duration-300 ${loading ? "opacity-30" : "opacity-100"}`}
+            className={`relative flex w-full items-center justify-center transition-opacity duration-300 ${loading ? "opacity-30" : "opacity-100"}`}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
@@ -302,10 +403,13 @@ export default function LifeTimeRandomSlides({
                 key={`${batch}-${currentPhoto.id}`}
                 photo={currentPhoto}
                 light={light}
+                objectFit="contain"
+                selected={selectedIds.has(currentPhoto.id)}
+                onToggleSelect={() => onToggleSelectPhoto(currentPhoto.id)}
                 onRotate={() => onRotatePhoto(currentPhoto.id)}
                 onShare={() => sharePhoto(currentPhoto)}
                 onSelect={() => onPhotoTap(currentPhoto)}
-                className="h-[82%] w-[82%] animate-zoom-out-in"
+                className="aspect-[2/3] w-[82%] sm:w-[70%] max-w-md animate-zoom-out-in"
                 style={cardDragStyle}
               />
             )}
@@ -360,71 +464,50 @@ export default function LifeTimeRandomSlides({
               </>
             )}
           </div>
-        ) : (
+        ) : !pinterestMode && photos.length <= 3 ? (
           <div
-            className={`grid h-full w-full gap-2 sm:gap-3 transition-opacity duration-300 ${loading ? "opacity-30" : "opacity-100"}`}
-            style={{
-              gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-              gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-            }}
+            className={`mx-auto grid w-full max-w-6xl gap-3 sm:gap-4 transition-opacity duration-300 ${loading ? "opacity-30" : "opacity-100"}`}
+            style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
           >
             {photos.map((photo, i) => (
               <PhotoTile
                 key={`${batch}-${photo.id}`}
                 photo={photo}
                 light={light}
+                objectFit="contain"
+                selected={selectedIds.has(photo.id)}
+                onToggleSelect={() => onToggleSelectPhoto(photo.id)}
                 onRotate={() => onRotatePhoto(photo.id)}
                 onShare={() => sharePhoto(photo)}
                 onSelect={() => setSelectedPhoto(photo)}
-                className="animate-zoom-out-in"
+                className="aspect-[4/5] w-full animate-zoom-out-in"
+                style={{ animationDelay: `${i * 0.08}s`, animationFillMode: "backwards" }}
+              />
+            ))}
+          </div>
+        ) : (
+          <div
+            className={`w-full transition-opacity duration-300 ${loading ? "opacity-30" : "opacity-100"}`}
+            style={{ columnCount: masonryCols, columnGap: "0.75rem" }}
+          >
+            {photos.map((photo, i) => (
+              <PhotoTile
+                key={`${batch}-${photo.id}`}
+                photo={photo}
+                light={light}
+                natural
+                selected={selectedIds.has(photo.id)}
+                onToggleSelect={() => onToggleSelectPhoto(photo.id)}
+                onRotate={() => onRotatePhoto(photo.id)}
+                onShare={() => sharePhoto(photo)}
+                onSelect={() => setSelectedPhoto(photo)}
+                className="mb-3 w-full break-inside-avoid animate-zoom-out-in"
                 style={{ animationDelay: `${i * 0.08}s`, animationFillMode: "backwards" }}
               />
             ))}
           </div>
         )}
       </div>
-
-      {isAllFilter ? (
-        <button
-          onClick={onFetchAll}
-          disabled={loading}
-          aria-label="Fetch more photos"
-          className={`flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-full border-2 text-xl sm:text-2xl backdrop-blur-sm transition-colors disabled:opacity-50 cursor-pointer animate-pulse-slow ${
-            light
-              ? "border-pink-400/60 bg-white/70 hover:border-pink-400 hover:bg-pink-100"
-              : "border-pink-300/50 bg-black/50 hover:border-pink-300/90 hover:bg-pink-300/10"
-          }`}
-        >
-          {loading ? "…" : "💖"}
-        </button>
-      ) : (
-        <div className="flex shrink-0 items-center gap-3">
-          <button
-            onClick={onPrevPage}
-            disabled={loading}
-            aria-label="Previous photos"
-            className={`flex h-11 items-center gap-1 rounded-full border-2 px-4 text-sm font-medium backdrop-blur-sm transition-colors disabled:opacity-50 cursor-pointer ${
-              light
-                ? "border-pink-400/60 bg-white/70 text-gray-700 hover:border-pink-400 hover:bg-pink-100"
-                : "border-pink-300/50 bg-black/50 text-white hover:border-pink-300/90 hover:bg-pink-300/10"
-            }`}
-          >
-            ‹ Previous
-          </button>
-          <button
-            onClick={onNextPage}
-            disabled={loading}
-            aria-label="Next photos"
-            className={`flex h-11 items-center gap-1 rounded-full border-2 px-4 text-sm font-medium backdrop-blur-sm transition-colors disabled:opacity-50 cursor-pointer ${
-              light
-                ? "border-pink-400/60 bg-white/70 text-gray-700 hover:border-pink-400 hover:bg-pink-100"
-                : "border-pink-300/50 bg-black/50 text-white hover:border-pink-300/90 hover:bg-pink-300/10"
-            }`}
-          >
-            Next ›
-          </button>
-        </div>
-      )}
 
       {selectedPhoto && (
         <PhotoMaxView photo={selectedPhoto} onClose={() => setSelectedPhoto(null)} />

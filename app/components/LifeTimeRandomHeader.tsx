@@ -1,6 +1,12 @@
+"use client";
+
+import { useState } from "react";
+
 export const MIN_N = 1;
 export const MAX_N = 9;
 export const DEFAULT_N = 3;
+export const MIN_MASONRY_COLS = 2;
+export const MAX_MASONRY_COLS = 6;
 
 export type FilterValue = "all" | "week" | "month" | "newest" | "custom";
 
@@ -34,6 +40,55 @@ interface LifeTimeRandomHeaderProps {
   endDate: string;
   onStartDateChange: (value: string) => void;
   onEndDateChange: (value: string) => void;
+  randomness: number;
+  onRandomnessChange: (value: number) => void;
+  selectedCount: number;
+  totalCount: number;
+  onSelectAll: () => void;
+  onShareSelected: () => void;
+  sharingSelected: boolean;
+  isNarrow: boolean;
+  isAllFilter: boolean;
+  loading: boolean;
+  onFetchAll: () => void;
+  onPrevPage: () => void;
+  onNextPage: () => void;
+  showMasonryCols: boolean;
+  masonryCols: number;
+  onDecrementMasonryCols: () => void;
+  onIncrementMasonryCols: () => void;
+  pinterestMode: boolean;
+  onTogglePinterestMode: () => void;
+}
+
+function InfoTooltip({ text, light }: { text: string; light: boolean }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        onBlur={() => setOpen(false)}
+        aria-label="What does this do?"
+        className={
+          light
+            ? "flex h-4 w-4 items-center justify-center rounded-full border border-gray-400 text-[10px] text-gray-500 cursor-pointer"
+            : "flex h-4 w-4 items-center justify-center rounded-full border border-white/40 text-[10px] text-white/60 cursor-pointer"
+        }
+      >
+        i
+      </button>
+      {open && (
+        <div
+          className={`absolute bottom-full left-1/2 z-30 mb-2 w-48 -translate-x-1/2 rounded-xl border-2 px-3 py-2 text-xs shadow-xl ${
+            light ? "border-pink-300/50 bg-white text-gray-700" : "border-pink-300/40 bg-black/90 text-white"
+          }`}
+        >
+          {text}
+        </div>
+      )}
+    </span>
+  );
 }
 
 export default function LifeTimeRandomHeader({
@@ -58,6 +113,25 @@ export default function LifeTimeRandomHeader({
   endDate,
   onStartDateChange,
   onEndDateChange,
+  randomness,
+  onRandomnessChange,
+  selectedCount,
+  totalCount,
+  onSelectAll,
+  onShareSelected,
+  sharingSelected,
+  isNarrow,
+  isAllFilter,
+  loading,
+  onFetchAll,
+  onPrevPage,
+  onNextPage,
+  showMasonryCols,
+  masonryCols,
+  onDecrementMasonryCols,
+  onIncrementMasonryCols,
+  pinterestMode,
+  onTogglePinterestMode,
 }: LifeTimeRandomHeaderProps) {
   return (
     <>
@@ -66,8 +140,8 @@ export default function LifeTimeRandomHeader({
         aria-label="Back"
         className={
           light
-            ? "absolute top-3 left-3 sm:top-6 sm:left-6 z-10 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-pink-400/60 bg-white/70 text-gray-700 backdrop-blur-sm transition-colors hover:border-pink-400 hover:bg-pink-100 cursor-pointer"
-            : "absolute top-3 left-3 sm:top-6 sm:left-6 z-10 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-pink-300/50 bg-black/50 text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
+            ? "absolute top-2 left-2 sm:top-6 sm:left-6 z-10 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-pink-400/60 bg-white/70 text-gray-700 backdrop-blur-sm transition-colors hover:border-pink-400 hover:bg-pink-100 cursor-pointer"
+            : "absolute top-2 left-2 sm:top-6 sm:left-6 z-10 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-pink-300/50 bg-black/50 text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
         }
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -80,8 +154,8 @@ export default function LifeTimeRandomHeader({
         aria-label={light ? "Switch to dark mode" : "Switch to bright mode"}
         className={
           light
-            ? "absolute top-3 right-3 sm:top-6 sm:right-6 z-10 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-pink-400/60 bg-white/70 text-gray-700 backdrop-blur-sm transition-colors hover:border-pink-400 hover:bg-pink-100 cursor-pointer"
-            : "absolute top-6 right-6 z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-pink-300/50 bg-black/50 text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
+            ? "absolute top-2 right-2 sm:top-6 sm:right-6 z-10 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-pink-400/60 bg-white/70 text-gray-700 backdrop-blur-sm transition-colors hover:border-pink-400 hover:bg-pink-100 cursor-pointer"
+            : "absolute top-2 right-2 sm:top-6 sm:right-6 z-10 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-pink-300/50 bg-black/50 text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
         }
       >
         {light ? (
@@ -103,7 +177,46 @@ export default function LifeTimeRandomHeader({
         Straight from our shared Drive folder — if something&apos;s missing, ask your baby to sync it 💕
       </p>
 
-      <div className="flex shrink-0 flex-wrap items-center justify-center gap-3 sm:gap-4">
+      <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 sm:gap-3">
+        {totalCount > 0 && (
+          <button
+            onClick={onSelectAll}
+            className={
+              light
+                ? "flex h-9 sm:h-11 items-center rounded-full border-2 border-pink-400/60 bg-white/70 px-3 sm:px-4 text-xs sm:text-sm font-medium text-gray-700 backdrop-blur-sm transition-colors hover:border-pink-400 hover:bg-pink-100 cursor-pointer"
+                : "flex h-9 sm:h-11 items-center rounded-full border-2 border-pink-300/50 bg-black/50 px-3 sm:px-4 text-xs sm:text-sm font-medium text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
+            }
+          >
+            {selectedCount === totalCount ? "Deselect all" : "Select all"}
+          </button>
+        )}
+
+        {selectedCount > 0 && (
+          <button
+            onClick={onShareSelected}
+            disabled={sharingSelected}
+            className="flex h-9 sm:h-11 items-center gap-1.5 rounded-full border-2 border-transparent bg-gradient-to-r from-pink-400 to-purple-400 px-4 sm:px-5 text-xs sm:text-sm font-medium text-white shadow-md shadow-pink-400/30 backdrop-blur-sm transition-colors disabled:opacity-60 cursor-pointer"
+          >
+            {sharingSelected ? "Sharing…" : `Share (${selectedCount})`}
+          </button>
+        )}
+
+        {isNarrow && (
+          <button
+            onClick={onTogglePinterestMode}
+            aria-label={pinterestMode ? "Switch to single-photo view" : "Switch to Pinterest view"}
+            className={`flex h-9 items-center gap-1.5 rounded-full border-2 px-3 text-xs font-medium backdrop-blur-sm transition-colors cursor-pointer ${
+              pinterestMode
+                ? "border-transparent bg-gradient-to-r from-pink-400 to-purple-400 text-white shadow-md shadow-pink-400/30"
+                : light
+                  ? "border-pink-400/60 bg-white/70 text-gray-700 hover:border-pink-400 hover:bg-pink-100"
+                  : "border-pink-300/50 bg-black/50 text-white hover:border-pink-300/90 hover:bg-pink-300/10"
+            }`}
+          >
+            Pinterest
+          </button>
+        )}
+
         <button
           onClick={onToggleSlideshow}
           aria-label={slideshow ? "Stop slideshow" : "Start slideshow"}
@@ -169,6 +282,52 @@ export default function LifeTimeRandomHeader({
           </>
         )}
 
+        {
+          isAllFilter ? (
+            <button
+              onClick={onFetchAll}
+              disabled={loading}
+              aria-label="Fetch more photos"
+              className={`flex h-9 sm:h-11 items-center justify-center rounded-full border-2 px-3 sm:px-4 text-base sm:text-lg backdrop-blur-sm transition-colors disabled:opacity-50 cursor-pointer animate-pulse-slow ${
+                light
+                  ? "border-pink-400/60 bg-white/70 hover:border-pink-400 hover:bg-pink-100"
+                  : "border-pink-300/50 bg-black/50 hover:border-pink-300/90 hover:bg-pink-300/10"
+              }`}
+            >
+              {loading ? "…" : "💖"}
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={onPrevPage}
+                disabled={loading}
+                aria-label="Previous photos"
+                className={`flex h-9 sm:h-11 items-center gap-1 rounded-full border-2 px-3 sm:px-4 text-xs sm:text-sm font-medium backdrop-blur-sm transition-colors disabled:opacity-50 cursor-pointer ${
+                  light
+                    ? "border-pink-400/60 bg-white/70 text-gray-700 hover:border-pink-400 hover:bg-pink-100"
+                    : "border-pink-300/50 bg-black/50 text-white hover:border-pink-300/90 hover:bg-pink-300/10"
+                }`}
+              >
+                ‹ Previous
+              </button>
+              <button
+                onClick={onNextPage}
+                disabled={loading}
+                aria-label="Next photos"
+                className={`flex h-9 sm:h-11 items-center gap-1 rounded-full border-2 px-3 sm:px-4 text-xs sm:text-sm font-medium backdrop-blur-sm transition-colors disabled:opacity-50 cursor-pointer ${
+                  light
+                    ? "border-pink-400/60 bg-white/70 text-gray-700 hover:border-pink-400 hover:bg-pink-100"
+                    : "border-pink-300/50 bg-black/50 text-white hover:border-pink-300/90 hover:bg-pink-300/10"
+                }`}
+              >
+                Next ›
+              </button>
+            </>
+          )
+        }
+      </div>
+
+      <div className="flex shrink-0 flex-wrap items-center justify-center gap-3 sm:gap-4">
         <div className="flex items-center gap-2">
           <span className={light ? "text-sm text-gray-600" : "text-sm text-white/70"}>Photos to show</span>
           <div
@@ -213,24 +372,91 @@ export default function LifeTimeRandomHeader({
             </button>
           </div>
         </div>
-      </div>
 
-      <div className="flex shrink-0 flex-wrap justify-center gap-2 sm:gap-2.5">
-        {FILTERS.map((f) => (
-            <button
-              key={f.value}
-              onClick={() => onFilterChange(f.value)}
-              className={`rounded-full border-2 px-3.5 py-1 text-xs sm:text-sm font-medium transition-all cursor-pointer ${
-                filter === f.value
-                  ? "border-transparent bg-gradient-to-r from-pink-400 to-purple-400 text-white shadow-md shadow-pink-400/30"
-                  : light
-                    ? "border-gray-300/70 bg-white/60 text-gray-600 hover:border-pink-300 hover:bg-pink-50"
-                    : "border-white/20 bg-white/5 text-white/70 hover:border-pink-300/50 hover:bg-pink-300/10"
+        <div className="flex items-center gap-2">
+          <span className={light ? "text-sm text-gray-600" : "text-sm text-white/70"}>Show</span>
+          <select
+            value={filter}
+            onChange={(e) => onFilterChange(e.target.value as FilterValue)}
+            className={`rounded-full border-2 px-3.5 py-1.5 text-xs sm:text-sm font-medium cursor-pointer ${
+              light
+                ? "border-pink-300/40 bg-white/70 text-gray-700"
+                : "border-pink-300/30 bg-black/30 text-white [color-scheme:dark]"
+            }`}
+          >
+            {FILTERS.map((f) => (
+              <option key={f.value} value={f.value}>
+                {f.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {showMasonryCols && (
+          <div className="flex items-center gap-2">
+            <span className={light ? "text-sm text-gray-600" : "text-sm text-white/70"}>Columns</span>
+            <div
+              className={`flex items-center gap-1 rounded-full border-2 p-1 ${
+                light ? "border-pink-300/40 bg-white/70" : "border-pink-300/30 bg-black/30"
               }`}
             >
-              {f.label}
-            </button>
-          ))}
+              <button
+                onClick={onDecrementMasonryCols}
+                aria-label="Fewer columns (bigger photos)"
+                disabled={masonryCols <= MIN_MASONRY_COLS}
+                className={
+                  light
+                    ? "flex h-7 w-7 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-pink-100 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                    : "flex h-7 w-7 items-center justify-center rounded-full text-white transition-colors hover:bg-pink-300/20 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                }
+              >
+                −
+              </button>
+              <span className={`w-4 text-center text-base font-semibold ${light ? "text-gray-900" : "text-white"}`}>
+                {masonryCols}
+              </span>
+              <button
+                onClick={onIncrementMasonryCols}
+                aria-label="More columns (smaller photos)"
+                disabled={masonryCols >= MAX_MASONRY_COLS}
+                className={
+                  light
+                    ? "flex h-7 w-7 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-pink-100 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                    : "flex h-7 w-7 items-center justify-center rounded-full text-white transition-colors hover:bg-pink-300/20 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                }
+              >
+                +
+              </button>
+            </div>
+          </div>
+        )}
+
+        {filter === "all" && (
+          <div className="flex items-center gap-2">
+            <span className={light ? "text-sm text-gray-600" : "text-sm text-white/70"}>Randomness</span>
+            <InfoTooltip
+              light={light}
+              text="Spreads each batch across different points in your whole photo history instead of pure luck-of-the-draw — higher means less chance of getting several photos from the same day, more variety to jog different memories."
+            />
+            <div
+              className={`flex w-40 sm:w-56 items-center gap-2 rounded-full border-2 px-3 py-1.5 ${
+                light ? "border-pink-300/40 bg-white/70" : "border-pink-300/30 bg-black/30"
+              }`}
+            >
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={10}
+                value={randomness}
+                onChange={(e) => onRandomnessChange(Number(e.target.value))}
+                aria-label="Randomness"
+                className="w-full cursor-pointer accent-pink-400"
+              />
+              <span className={`w-9 shrink-0 text-xs tabular-nums ${light ? "text-gray-600" : "text-white/70"}`}>{randomness}%</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {filter === "custom" && (
