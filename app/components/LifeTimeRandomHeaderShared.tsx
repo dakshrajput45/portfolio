@@ -148,7 +148,7 @@ export function BackButton({ onClick, light }: { onClick: () => void; light: boo
     <button
       onClick={onClick}
       aria-label="Back"
-      className={`absolute top-2 left-2 sm:top-6 sm:left-6 ${cornerButtonClass(light)}`}
+      className={`absolute top-6 left-3 sm:top-6 sm:left-6 ${cornerButtonClass(light)}`}
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
         <path d="M15 18l-6-6 6-6" />
@@ -350,21 +350,24 @@ export function buildHeaderControls(props: HeaderControlsProps) {
       </div>
 
       <div
-        className={`flex items-center gap-2 rounded-2xl border-2 px-3 py-2 ${
-          light ? "border-blue-200/50 bg-white/70": "border-pink-300/30 bg-black/30"
+        className={`flex flex-col gap-2 rounded-2xl border-2 px-3 py-2 ${
+          light ? "border-blue-200/50 bg-white/70" : "border-pink-300/30 bg-black/30"
         }`}
       >
-        <span
-          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-            light ? "bg-blue-100 text-pink-500": "bg-pink-300/20 text-pink-300"
-          }`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-            <path d="M4 4h16l-6 8v6l-4 2v-8L4 4z" />
-          </svg>
-        </span>
-        <span className={`text-sm ${light ? "text-gray-600" : "text-white/70"}`}>Show</span>
-        <div className="flex flex-1 flex-wrap justify-end gap-1.5">
+        <div className="flex items-center gap-2">
+          <span
+            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+              light ? "bg-blue-100 text-pink-500" : "bg-pink-300/20 text-pink-300"
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 3" />
+            </svg>
+          </span>
+          <span className={`text-sm ${light ? "text-gray-600" : "text-white/70"}`}>Time range</span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
           {FILTERS.map((f) => (
             <button
               key={f.value}
@@ -372,7 +375,9 @@ export function buildHeaderControls(props: HeaderControlsProps) {
               className={`rounded-full border-2 px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
                 filter === f.value
                   ? `border-transparent text-white ${accentGradientClass(light)}`
-                  : light ? "border-blue-200/50 bg-white/60 text-gray-700 hover:bg-blue-100": "border-pink-300/30 bg-black/20 text-white hover:bg-pink-300/10"
+                  : light
+                    ? "border-blue-200/50 bg-white/60 text-gray-700 hover:bg-blue-100"
+                    : "border-pink-300/30 bg-black/20 text-white hover:bg-pink-300/10"
               }`}
             >
               {f.label}

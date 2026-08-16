@@ -65,7 +65,7 @@ export default function LifeTimeRandomHeaderMobile(props: LifeTimeRandomHeaderMo
         onClick={onShareSelected}
         disabled={sharingSelected || selectedCount === 0}
         aria-label={selectedCount > 0 ? `Share ${selectedCount} selected` : "Select photos to share"}
-        className={`absolute top-2 right-2 disabled:opacity-40 disabled:cursor-not-allowed ${cornerButtonClass(light)}`}
+        className={`absolute top-6 right-3 disabled:opacity-40 disabled:cursor-not-allowed ${cornerButtonClass(light)}`}
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
           <circle cx="18" cy="5" r="3" />

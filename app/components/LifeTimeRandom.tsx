@@ -7,8 +7,11 @@ import LifeTimeRandomHeaderMobile from "./LifeTimeRandomHeaderMobile";
 import LifeTimeRandomMobileBottomNav from "./LifeTimeRandomMobileBottomNav";
 import {
   accentGradientClass,
+  buildHeaderControls,
   DEFAULT_N,
+  FILTERS,
   FilterValue,
+  HeaderControlsProps,
   MAX_MASONRY_COLS,
   MAX_N,
   MIN_MASONRY_COLS,
@@ -422,6 +425,8 @@ export default function LifeTimeRandom({
     onTogglePinterestMode: () => setPinterestMode((v) => !v),
   };
 
+  const { dateRangeRow: quickDateRangeRow } = buildHeaderControls(headerControlsProps as HeaderControlsProps);
+
   return createPortal(
     <div
       className={`fixed inset-0 z-50 flex flex-col transition-colors duration-300 ${
@@ -460,6 +465,33 @@ export default function LifeTimeRandom({
         className={`relative z-10 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 ${showSingle ? "flex flex-col justify-center" : ""}`}
       >
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 sm:gap-3">
+          {isNarrow && (
+            <div
+              className={`sticky top-0 z-10 -mx-3 w-[calc(100%+1.5rem)] px-3 pb-2 backdrop-blur-sm sm:hidden ${
+                light ? "bg-sky-50/80" : "bg-black/80"
+              }`}
+            >
+              <div className="flex flex-wrap gap-1.5">
+                {FILTERS.map((f) => (
+                  <button
+                    key={f.value}
+                    onClick={() => headerControlsProps.onFilterChange(f.value)}
+                    className={`rounded-full border-2 px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
+                      filter === f.value
+                        ? `border-transparent text-white ${accentGradientClass(light)}`
+                        : light
+                          ? "border-blue-200/50 bg-white/70 text-gray-700 hover:bg-blue-100"
+                          : "border-pink-300/30 bg-black/30 text-white hover:bg-pink-300/10"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+              {filter === "custom" && <div className="mt-2">{quickDateRangeRow}</div>}
+            </div>
+          )}
+
           <LifeTimeRandomSlides
             ref={slidesRef}
             photos={photos}
