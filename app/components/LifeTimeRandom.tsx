@@ -353,6 +353,7 @@ export default function LifeTimeRandom({
   const dislikeOpacity = exiting === "dislike" ? 1 : Math.min(Math.max(-dragX, 0) / 100, 1);
 
   const showSingle = isNarrow && !pinterestMode;
+  const fitGrid = !isNarrow && !pinterestMode;
 
   const headerControlsProps = {
     light,
@@ -459,9 +460,19 @@ export default function LifeTimeRandom({
           </div>
 
           <div
-            className={`flex-1 overflow-y-auto px-3 sm:px-4 sm:py-4 ${showSingle ? "flex flex-col justify-center" : ""}`}
+            className={`flex-1 px-3 sm:px-4 sm:py-4 ${
+              showSingle
+                ? "flex flex-col justify-center overflow-y-auto"
+                : fitGrid
+                  ? "flex flex-col overflow-hidden"
+                  : "overflow-y-auto"
+            }`}
           >
-            <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 sm:gap-3">
+            <div
+              className={`mx-auto flex w-full max-w-6xl flex-col items-center gap-2 sm:gap-3 ${
+                fitGrid ? "min-h-0 flex-1" : ""
+              }`}
+            >
               <LifeTimeRandomSlides
                 ref={slidesRef}
                 photos={photos}
