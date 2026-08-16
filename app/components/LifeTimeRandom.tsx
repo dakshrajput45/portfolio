@@ -462,7 +462,7 @@ export default function LifeTimeRandom({
       </div>
 
       <div
-        className={`relative z-10 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 ${showSingle ? "flex flex-col justify-center" : ""}`}
+        className={`relative z-10 flex-1 overflow-y-auto px-3 sm:px-4 sm:py-4 ${showSingle ? "flex flex-col justify-center" : ""}`}
       >
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 sm:gap-3">
           <LifeTimeRandomSlides

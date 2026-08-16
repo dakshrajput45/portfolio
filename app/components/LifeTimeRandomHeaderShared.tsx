@@ -97,30 +97,24 @@ export function HeartLoadMoreButton({
 export function InfoTooltip({ text, light }: { text: string; light: boolean }) {
   const [open, setOpen] = useState(false);
   return (
-    <span className="relative inline-flex">
+    <>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        onBlur={() => setOpen(false)}
         aria-label="What does this do?"
+        aria-expanded={open}
         className={
           light
-            ? "flex h-4 w-4 items-center justify-center rounded-full border border-gray-400 text-[10px] text-gray-500 cursor-pointer"
-            : "flex h-4 w-4 items-center justify-center rounded-full border border-white/40 text-[10px] text-white/60 cursor-pointer"
+            ? "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-gray-400 text-[10px] text-gray-500 cursor-pointer"
+            : "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-white/40 text-[10px] text-white/60 cursor-pointer"
         }
       >
         i
       </button>
       {open && (
-        <div
-          className={`absolute bottom-full left-1/2 z-30 mb-2 w-48 -translate-x-1/2 rounded-xl border-2 px-3 py-2 text-xs shadow-xl ${
-            light ? "border-blue-300/50 bg-white text-gray-700": "border-pink-300/40 bg-black/90 text-white"
-          }`}
-        >
-          {text}
-        </div>
+        <p className={`basis-full text-xs ${light ? "text-gray-500" : "text-white/60"}`}>{text}</p>
       )}
-    </span>
+    </>
   );
 }
 
