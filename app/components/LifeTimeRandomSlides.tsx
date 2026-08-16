@@ -1,7 +1,7 @@
 import { forwardRef, useImperativeHandle, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { toPng } from "html-to-image";
-import { accentGradientClass } from "./LifeTimeRandomHeaderShared";
+import { accentGradientClass, MAX_MASONRY_COLS, MIN_MASONRY_COLS } from "./LifeTimeRandomHeaderShared";
 
 export interface Photo {
   id: string;
@@ -453,6 +453,9 @@ interface LifeTimeRandomSlidesProps {
   selectedIds: Set<string>;
   onToggleSelectPhoto: (id: string) => void;
   masonryCols: number;
+  showMasonryCols: boolean;
+  onDecrementMasonryCols: () => void;
+  onIncrementMasonryCols: () => void;
 }
 
 const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRandomSlidesProps>(function LifeTimeRandomSlides({
@@ -481,6 +484,9 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
   selectedIds,
   onToggleSelectPhoto,
   masonryCols,
+  showMasonryCols,
+  onDecrementMasonryCols,
+  onIncrementMasonryCols,
 }, ref) {
   const rawCols = Math.ceil(Math.sqrt(photos.length || 1));
   const cols = isNarrow ? Math.min(rawCols, 2) : photos.length > 0 && photos.length <= 3 ? photos.length : rawCols;
@@ -516,7 +522,7 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
 
   return (
     <>
-      <div className="relative mt-4 w-full sm:mt-4">
+      <div className="relative -mt-7 w-full sm:mt-4">
         {loading && (
           <div className="absolute inset-0 z-20 flex items-center justify-center py-10">
             <div className="aspect-[2/3] w-[82%] sm:w-[70%] max-w-md rounded-3xl skeleton-shimmer"></div>
@@ -632,6 +638,38 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
                 </svg>
                 {capturing ? "Capturing…" : "Screenshot"}
               </button>
+            )}
+
+            {isNarrow && showMasonryCols && (
+              <div
+                className={`absolute -top-2 right-0 z-10 flex items-center gap-0.5 rounded-full border-2 px-1.5 py-1.5 backdrop-blur-sm ${
+                  light ? "border-blue-300/60 bg-white/80 text-gray-700" : "border-pink-300/50 bg-black/60 text-white"
+                }`}
+              >
+                <button
+                  onClick={onDecrementMasonryCols}
+                  disabled={masonryCols <= MIN_MASONRY_COLS}
+                  aria-label="Bigger photos, fewer columns"
+                  className="flex h-6 w-6 items-center justify-center rounded-full disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                    <circle cx="10" cy="10" r="6" />
+                    <path d="M21 21l-4.3-4.3M10 7v6M7 10h6" />
+                  </svg>
+                </button>
+                <span className="w-3 text-center text-[11px] font-semibold tabular-nums">{masonryCols}</span>
+                <button
+                  onClick={onIncrementMasonryCols}
+                  disabled={masonryCols >= MAX_MASONRY_COLS}
+                  aria-label="Smaller photos, more columns"
+                  className="flex h-6 w-6 items-center justify-center rounded-full disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                    <circle cx="10" cy="10" r="6" />
+                    <path d="M21 21l-4.3-4.3M7 10h6" />
+                  </svg>
+                </button>
+              </div>
             )}
             <div
               ref={masonryRef}

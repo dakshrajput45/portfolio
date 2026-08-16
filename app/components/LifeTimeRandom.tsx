@@ -492,6 +492,9 @@ export default function LifeTimeRandom({
             selectedIds={selectedIds}
             onToggleSelectPhoto={toggleSelectPhoto}
             masonryCols={masonryCols}
+            showMasonryCols={photos.length > 3 || pinterestMode}
+            onDecrementMasonryCols={() => updateMasonryCols(masonryCols - 1)}
+            onIncrementMasonryCols={() => updateMasonryCols(masonryCols + 1)}
           />
         </div>
       </div>

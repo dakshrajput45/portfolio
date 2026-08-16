@@ -380,56 +380,6 @@ export function buildHeaderControls(props: HeaderControlsProps) {
         </div>
       </div>
 
-      {showMasonryCols && (
-        <div
-          className={`flex flex-wrap items-center gap-2 rounded-2xl border-2 px-3 py-2 ${
-            light ? "border-blue-200/50 bg-white/70": "border-pink-300/30 bg-black/30"
-          }`}
-        >
-          <span
-            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-              light ? "bg-blue-100 text-pink-500": "bg-pink-300/20 text-pink-300"
-            }`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-              <rect x="3" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="3" width="7" height="7" rx="1" />
-              <rect x="3" y="14" width="7" height="7" rx="1" />
-              <rect x="14" y="14" width="7" height="7" rx="1" />
-            </svg>
-          </span>
-          <span className={`flex-1 text-sm ${light ? "text-gray-600" : "text-white/70"}`}>Columns</span>
-          <div
-            className={`flex items-center gap-1 rounded-full border-2 p-1 ${
-              light ? "border-blue-200/50 bg-white/60": "border-pink-300/30 bg-black/20"
-            }`}
-          >
-            <button
-              onClick={onDecrementMasonryCols}
-              aria-label="Fewer columns (bigger photos)"
-              disabled={masonryCols <= MIN_MASONRY_COLS}
-              className={
-                light ? "flex h-7 w-7 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-blue-100 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed": "flex h-7 w-7 items-center justify-center rounded-full text-white transition-colors hover:bg-pink-300/20 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-              }
-            >
-              −
-            </button>
-            <span className={`w-4 text-center text-base font-semibold ${light ? "text-gray-900" : "text-white"}`}>
-              {masonryCols}
-            </span>
-            <button
-              onClick={onIncrementMasonryCols}
-              aria-label="More columns (smaller photos)"
-              disabled={masonryCols >= MAX_MASONRY_COLS}
-              className={
-                light ? "flex h-7 w-7 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-blue-100 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed": "flex h-7 w-7 items-center justify-center rounded-full text-white transition-colors hover:bg-pink-300/20 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-              }
-            >
-              +
-            </button>
-          </div>
-        </div>
-      )}
 
       {filter === "all" && (
         <div
@@ -485,6 +435,61 @@ export function buildHeaderControls(props: HeaderControlsProps) {
     </>
   );
 
+  const columnsControl = showMasonryCols && (
+    <div
+      className={`flex flex-wrap items-center gap-2 rounded-2xl border-2 px-3 py-2 ${
+        light ? "border-blue-200/50 bg-white/70" : "border-pink-300/30 bg-black/30"
+      }`}
+    >
+      <span
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+          light ? "bg-blue-100 text-pink-500" : "bg-pink-300/20 text-pink-300"
+        }`}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </svg>
+      </span>
+      <span className={`flex-1 text-sm ${light ? "text-gray-600" : "text-white/70"}`}>Columns</span>
+      <div
+        className={`flex items-center gap-1 rounded-full border-2 p-1 ${
+          light ? "border-blue-200/50 bg-white/60" : "border-pink-300/30 bg-black/20"
+        }`}
+      >
+        <button
+          onClick={onDecrementMasonryCols}
+          aria-label="Fewer columns (bigger photos)"
+          disabled={masonryCols <= MIN_MASONRY_COLS}
+          className={
+            light
+              ? "flex h-7 w-7 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-blue-100 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+              : "flex h-7 w-7 items-center justify-center rounded-full text-white transition-colors hover:bg-pink-300/20 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+          }
+        >
+          −
+        </button>
+        <span className={`w-4 text-center text-base font-semibold ${light ? "text-gray-900" : "text-white"}`}>
+          {masonryCols}
+        </span>
+        <button
+          onClick={onIncrementMasonryCols}
+          aria-label="More columns (smaller photos)"
+          disabled={masonryCols >= MAX_MASONRY_COLS}
+          className={
+            light
+              ? "flex h-7 w-7 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-blue-100 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+              : "flex h-7 w-7 items-center justify-center rounded-full text-white transition-colors hover:bg-pink-300/20 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+          }
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+
   const dateRangeRow = filter === "custom" && (
     <div className="flex shrink-0 flex-wrap items-center justify-center gap-2">
       <input
@@ -509,5 +514,5 @@ export function buildHeaderControls(props: HeaderControlsProps) {
     </div>
   );
 
-  return { actionButtons, loadMoreButton, slideshowControls, fineTuneControls, dateRangeRow };
+  return { actionButtons, loadMoreButton, slideshowControls, fineTuneControls, columnsControl, dateRangeRow };
 }

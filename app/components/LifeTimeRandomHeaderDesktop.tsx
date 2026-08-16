@@ -15,7 +15,7 @@ interface LifeTimeRandomHeaderDesktopProps extends HeaderControlsProps {
 
 export default function LifeTimeRandomHeaderDesktop(props: LifeTimeRandomHeaderDesktopProps) {
   const { light, onClose, onToggleLight } = props;
-  const { actionButtons, loadMoreButton, slideshowControls, fineTuneControls, dateRangeRow } =
+  const { actionButtons, loadMoreButton, slideshowControls, fineTuneControls, columnsControl, dateRangeRow } =
     buildHeaderControls(props);
 
   return (
@@ -43,7 +43,10 @@ export default function LifeTimeRandomHeaderDesktop(props: LifeTimeRandomHeaderD
         {loadMoreButton}
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center justify-center gap-3 sm:gap-4">{fineTuneControls}</div>
+      <div className="flex shrink-0 flex-wrap items-center justify-center gap-3 sm:gap-4">
+        {fineTuneControls}
+        {columnsControl}
+      </div>
       {dateRangeRow}
     </>
   );
