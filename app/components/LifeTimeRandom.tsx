@@ -458,25 +458,17 @@ export default function LifeTimeRandom({
               onToggleLight={() => setLight((v) => !v)}
             />
           )}
-        </div>
-      </div>
 
-      <div
-        className={`relative z-10 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 ${showSingle ? "flex flex-col justify-center" : ""}`}
-      >
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 sm:gap-3">
           {isNarrow && (
-            <div
-              className={`sticky top-0 z-10 -mx-3 w-[calc(100%+1.5rem)] px-3 pb-2 backdrop-blur-sm sm:hidden ${
-                light ? "bg-sky-50/80" : "bg-black/80"
-              }`}
-            >
-              <div className="flex flex-wrap gap-1.5">
+            <div className="w-full sm:hidden">
+              <div
+                className="-mx-3 flex gap-1.5 overflow-x-auto px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              >
                 {FILTERS.map((f) => (
                   <button
                     key={f.value}
                     onClick={() => headerControlsProps.onFilterChange(f.value)}
-                    className={`rounded-full border-2 px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
+                    className={`shrink-0 rounded-full border-2 px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
                       filter === f.value
                         ? `border-transparent text-white ${accentGradientClass(light)}`
                         : light
@@ -488,10 +480,16 @@ export default function LifeTimeRandom({
                   </button>
                 ))}
               </div>
-              {filter === "custom" && <div className="mt-2">{quickDateRangeRow}</div>}
+              {filter === "custom" && <div className="mt-2 flex justify-center">{quickDateRangeRow}</div>}
             </div>
           )}
+        </div>
+      </div>
 
+      <div
+        className={`relative z-10 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 ${showSingle ? "flex flex-col justify-center" : ""}`}
+      >
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 sm:gap-3">
           <LifeTimeRandomSlides
             ref={slidesRef}
             photos={photos}

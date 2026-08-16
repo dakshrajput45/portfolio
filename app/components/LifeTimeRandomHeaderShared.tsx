@@ -294,7 +294,7 @@ export function buildHeaderControls(props: HeaderControlsProps) {
   const fineTuneControls = (
     <>
       <div
-        className={`flex items-center gap-2 rounded-2xl border-2 px-3 py-2 ${
+        className={`flex flex-wrap items-center gap-2 rounded-2xl border-2 px-3 py-2 ${
           light ? "border-blue-200/50 bg-white/70": "border-pink-300/30 bg-black/30"
         }`}
       >
@@ -388,7 +388,7 @@ export function buildHeaderControls(props: HeaderControlsProps) {
 
       {showMasonryCols && (
         <div
-          className={`flex items-center gap-2 rounded-2xl border-2 px-3 py-2 ${
+          className={`flex flex-wrap items-center gap-2 rounded-2xl border-2 px-3 py-2 ${
             light ? "border-blue-200/50 bg-white/70": "border-pink-300/30 bg-black/30"
           }`}
         >
@@ -439,7 +439,7 @@ export function buildHeaderControls(props: HeaderControlsProps) {
 
       {filter === "all" && (
         <div
-          className={`flex items-center gap-2 rounded-2xl border-2 px-3 py-2 ${
+          className={`flex flex-wrap items-center gap-2 rounded-2xl border-2 px-3 py-2 ${
             light ? "border-blue-200/50 bg-white/70": "border-pink-300/30 bg-black/30"
           }`}
         >
