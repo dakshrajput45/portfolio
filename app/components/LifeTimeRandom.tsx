@@ -2,18 +2,25 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import LifeTimeRandomHeader, {
+import LifeTimeRandomHeaderDesktop from "./LifeTimeRandomHeaderDesktop";
+import LifeTimeRandomHeaderMobile from "./LifeTimeRandomHeaderMobile";
+import LifeTimeRandomMobileBottomNav from "./LifeTimeRandomMobileBottomNav";
+import {
+  accentGradientClass,
   DEFAULT_N,
   FilterValue,
   MAX_MASONRY_COLS,
   MAX_N,
   MIN_MASONRY_COLS,
   MIN_N,
-} from "./LifeTimeRandomHeader";
-import LifeTimeRandomSlides, { Photo } from "./LifeTimeRandomSlides";
+} from "./LifeTimeRandomHeaderShared";
+import LifeTimeRandomSlides, { LifeTimeRandomSlidesHandle, Photo } from "./LifeTimeRandomSlides";
+import { useBackToClose } from "../lib/useBackToClose";
+import { useDoubleBackToExit } from "../lib/useDoubleBackToExit";
 
 const SWIPE_THRESHOLD = 50;
 const RETRY_DELAY_MS = 600;
+const SLIDESHOW_INTERVAL_SEC = 4;
 const ERROR_TOAST_MESSAGE = "Something got errored, retry once or call your baby once, cutie 💕";
 
 export default function LifeTimeRandom({
@@ -39,16 +46,17 @@ export default function LifeTimeRandom({
   const [exiting, setExiting] = useState<"like" | "dislike" | null>(null);
   const [pageOffset, setPageOffset] = useState(0);
   const [filter, setFilter] = useState<FilterValue>("all");
-  const [randomness, setRandomness] = useState(0);
+  const [randomness, setRandomness] = useState(25);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [slideshow, setSlideshow] = useState(false);
   const [paused, setPaused] = useState(false);
-  const [intervalSec, setIntervalSec] = useState(4);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sharingSelected, setSharingSelected] = useState(false);
   const [pinterestMode, setPinterestMode] = useState(false);
   const [masonryCols, setMasonryCols] = useState(3);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showBackHint, setShowBackHint] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const lastFetchParamsRef = useRef<{
@@ -75,7 +83,8 @@ export default function LifeTimeRandom({
       start: string,
       end: string,
       offset: number,
-      randomnessValue: number
+      randomnessValue: number,
+      append = false
     ) => {
       lastFetchParamsRef.current = { count, filterValue, start, end, offset, randomnessValue };
       setLoading(true);
@@ -101,17 +110,22 @@ export default function LifeTimeRandom({
           if (!res.ok) throw new Error("Failed to load photos");
           const data = await res.json();
           const fetched = data.photos as Omit<Photo, "rotation">[];
-          setPhotos(fetched.map((p) => ({ ...p, rotation: 0 })));
+          const withRotation = fetched.map((p) => ({ ...p, rotation: 0 }));
+          if (append) {
+            setPhotos((prev) => [...prev, ...withRotation]);
+          } else {
+            setPhotos(withRotation);
+            setCurrentIndex(0);
+            setSelectedIds(new Set());
+          }
           fetched.forEach((p) => {
             if (!p.isVideo) {
               const img = new window.Image();
               img.src = p.src;
             }
           });
-          setCurrentIndex(0);
           setBatch((b) => b + 1);
           setPageOffset(isAll ? 0 : offset);
-          setSelectedIds(new Set());
           setLoading(false);
           return;
         } catch {
@@ -128,7 +142,7 @@ export default function LifeTimeRandom({
   );
 
   useEffect(() => {
-    fetchPhotos(DEFAULT_N, "all", "", "", 0, 0);
+    fetchPhotos(DEFAULT_N, "all", "", "", 0, 25);
   }, [fetchPhotos]);
 
   const rotatePhoto = (id: string) => {
@@ -141,6 +155,8 @@ export default function LifeTimeRandom({
     const clamped = Math.min(MAX_N, Math.max(MIN_N, value));
     setN(clamped);
     setNInput(String(clamped));
+    setPageOffset(0);
+    fetchPhotos(clamped, filter, startDate, endDate, 0, randomness);
   };
 
   const updateMasonryCols = (value: number) => {
@@ -162,6 +178,18 @@ export default function LifeTimeRandom({
       else next.add(id);
       return next;
     });
+  };
+
+  const [screenshotCapturing, setScreenshotCapturing] = useState(false);
+  const slidesRef = useRef<LifeTimeRandomSlidesHandle>(null);
+  const handleScreenshotCapture = async () => {
+    if (screenshotCapturing) return;
+    setScreenshotCapturing(true);
+    try {
+      await slidesRef.current?.captureScreenshot();
+    } finally {
+      setScreenshotCapturing(false);
+    }
   };
 
   const shareSelectedPhotos = async () => {
@@ -213,14 +241,13 @@ export default function LifeTimeRandom({
       } else {
         fetchPhotos(n, filter, startDate, endDate, nextPageOffset, randomness);
       }
-    }, intervalSec * 1000);
+    }, SLIDESHOW_INTERVAL_SEC * 1000);
     return () => clearTimeout(timer);
   }, [
     slideshow,
     paused,
     selectedPhoto,
     loading,
-    intervalSec,
     currentIndex,
     photos.length,
     isNarrow,
@@ -237,6 +264,24 @@ export default function LifeTimeRandom({
   useEffect(() => {
     if (selectedPhoto && slideshow) setPaused(true);
   }, [selectedPhoto, slideshow]);
+
+  useBackToClose(!!selectedPhoto, () => setSelectedPhoto(null));
+  useBackToClose(sidebarOpen, () => setSidebarOpen(false));
+  useDoubleBackToExit(
+    isNarrow && !selectedPhoto && !sidebarOpen,
+    onClose,
+    () => {
+      setShowBackHint(true);
+      setTimeout(() => setShowBackHint(false), 2000);
+    }
+  );
+
+  const goToAdjacentPhoto = (direction: 1 | -1) => {
+    if (!selectedPhoto || photos.length === 0) return;
+    const idx = photos.findIndex((p) => p.id === selectedPhoto.id);
+    if (idx === -1) return;
+    setSelectedPhoto(photos[(idx + direction + photos.length) % photos.length]);
+  };
 
   const handlePhotoTap = (photo: Photo) => {
     if (!slideshow) {
@@ -305,125 +350,219 @@ export default function LifeTimeRandom({
 
   const showSingle = isNarrow && !pinterestMode;
 
+  const headerControlsProps = {
+    light,
+    slideshow,
+    paused,
+    onToggleSlideshow: () => {
+      setSlideshow((v) => !v);
+      setPaused(false);
+    },
+    onTogglePause: () => setPaused((p) => !p),
+    n,
+    nInput,
+    onDecrement: () => updateN(n - 1),
+    onIncrement: () => updateN(n + 1),
+    onNInputChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value.replace(/\D/g, "");
+      setNInput(raw);
+      const parsed = Number(raw);
+      if (raw !== "" && Number.isFinite(parsed)) {
+        setN(Math.min(MAX_N, Math.max(MIN_N, parsed)));
+      }
+    },
+    onNInputBlur: () => {
+      const parsed = Number(nInput);
+      const clamped =
+        nInput !== "" && Number.isFinite(parsed) ? Math.min(MAX_N, Math.max(MIN_N, parsed)) : DEFAULT_N;
+      setN(clamped);
+      setNInput(String(clamped));
+      if (clamped !== n) {
+        setPageOffset(0);
+        fetchPhotos(clamped, filter, startDate, endDate, 0, randomness);
+      }
+    },
+    filter,
+    onFilterChange: (value: FilterValue) => {
+      setFilter(value);
+      setPageOffset(0);
+      if (value !== "custom") {
+        fetchPhotos(n, value, "", "", 0, randomness);
+      }
+    },
+    startDate,
+    endDate,
+    onStartDateChange: (value: string) => {
+      setStartDate(value);
+      setPageOffset(0);
+      fetchPhotos(n, filter, value, endDate, 0, randomness);
+    },
+    onEndDateChange: (value: string) => {
+      setEndDate(value);
+      setPageOffset(0);
+      fetchPhotos(n, filter, startDate, value, 0, randomness);
+    },
+    randomness,
+    onRandomnessChange: setRandomness,
+    selectedCount: selectedIds.size,
+    totalCount: photos.length,
+    onSelectAll: selectAllPhotos,
+    onShareSelected: shareSelectedPhotos,
+    sharingSelected,
+    isNarrow,
+    isAllFilter,
+    loading,
+    onFetchAll: () => fetchPhotos(n, "all", "", "", 0, randomness),
+    onLoadMore: () => fetchPhotos(n, filter, startDate, endDate, pageOffset + n, randomness, true),
+    showMasonryCols: photos.length > 3 || pinterestMode,
+    masonryCols,
+    onDecrementMasonryCols: () => updateMasonryCols(masonryCols - 1),
+    onIncrementMasonryCols: () => updateMasonryCols(masonryCols + 1),
+    pinterestMode,
+    onTogglePinterestMode: () => setPinterestMode((v) => !v),
+  };
+
   return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex flex-col overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 transition-colors duration-300 ${
-        showSingle ? "justify-center" : ""
-      } ${light ? "bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-900" : "bg-black text-white"}`}
+      className={`fixed inset-0 z-50 flex flex-col transition-colors duration-300 ${
+        light ? "bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-900" : "bg-black text-white"
+      }`}
     >
-      <div className={`fixed -top-1/2 -left-1/2 h-[200%] w-[200%] animate-spin-slow ${light ? "opacity-10" : "opacity-20"}`}>
-        <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-gradient-to-r from-pink-400 to-purple-500 blur-3xl"></div>
+      <div className={`pointer-events-none fixed -top-1/2 -left-1/2 h-[200%] w-[200%] animate-spin-slow ${light ? "opacity-10" : "opacity-20"}`}>
+        <div className={`absolute top-1/4 left-1/4 h-96 w-96 rounded-full blur-3xl ${accentGradientClass(light)}`}></div>
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col items-center gap-2 pb-10 sm:gap-3">
-        <LifeTimeRandomHeader
+      <div
+        className={`relative z-10 shrink-0 border-b-2 px-3 pt-3 pb-3 sm:px-4 sm:pt-4 sm:pb-4 ${
+          light ? "border-blue-200/50" : "border-pink-300/15"
+        }`}
+      >
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 sm:gap-3">
+          {isNarrow ? (
+            <LifeTimeRandomHeaderMobile
+              {...headerControlsProps}
+              onClose={onClose}
+              onToggleLight={() => setLight((v) => !v)}
+              sidebarOpen={sidebarOpen}
+              onCloseSidebar={() => setSidebarOpen(false)}
+            />
+          ) : (
+            <LifeTimeRandomHeaderDesktop
+              {...headerControlsProps}
+              onClose={onClose}
+              onToggleLight={() => setLight((v) => !v)}
+            />
+          )}
+        </div>
+      </div>
+
+      <div
+        className={`relative z-10 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 ${showSingle ? "flex flex-col justify-center" : ""}`}
+      >
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 sm:gap-3">
+          <LifeTimeRandomSlides
+            ref={slidesRef}
+            photos={photos}
+            batch={batch}
+            currentIndex={currentIndex}
+            light={light}
+            loading={loading}
+            isNarrow={isNarrow}
+            showSingle={showSingle}
+            pinterestMode={pinterestMode}
+            selectedPhoto={selectedPhoto}
+            setSelectedPhoto={setSelectedPhoto}
+            onPhotoTap={handlePhotoTap}
+            onRotatePhoto={rotatePhoto}
+            goPrev={goPrev}
+            goNext={goNext}
+            onMaxViewPrev={() => goToAdjacentPhoto(-1)}
+            onMaxViewNext={() => goToAdjacentPhoto(1)}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            cardDragStyle={cardDragStyle}
+            likeOpacity={likeOpacity}
+            dislikeOpacity={dislikeOpacity}
+            selectedIds={selectedIds}
+            onToggleSelectPhoto={toggleSelectPhoto}
+            masonryCols={masonryCols}
+          />
+        </div>
+      </div>
+
+      {isNarrow && (
+        <LifeTimeRandomMobileBottomNav
           light={light}
-          onClose={onClose}
-          onToggleLight={() => setLight((v) => !v)}
+          selectedCount={selectedIds.size}
+          totalCount={photos.length}
+          onSelectAll={selectAllPhotos}
+          pinterestMode={pinterestMode}
+          onTogglePinterestMode={() => setPinterestMode((v) => !v)}
+          isAllFilter={isAllFilter}
+          loading={loading}
+          onFetchAll={() => fetchPhotos(n, "all", "", "", 0, randomness)}
+          onLoadMore={() => fetchPhotos(n, filter, startDate, endDate, pageOffset + n, randomness, true)}
           slideshow={slideshow}
           paused={paused}
-          intervalSec={intervalSec}
           onToggleSlideshow={() => {
             setSlideshow((v) => !v);
             setPaused(false);
           }}
           onTogglePause={() => setPaused((p) => !p)}
-          onIntervalChange={setIntervalSec}
-          n={n}
-          nInput={nInput}
-          onDecrement={() => updateN(n - 1)}
-          onIncrement={() => updateN(n + 1)}
-          onNInputChange={(e) => {
-            const raw = e.target.value.replace(/\D/g, "");
-            setNInput(raw);
-            const parsed = Number(raw);
-            if (raw !== "" && Number.isFinite(parsed)) {
-              setN(Math.min(MAX_N, Math.max(MIN_N, parsed)));
-            }
-          }}
-          onNInputBlur={() => {
-            const parsed = Number(nInput);
-            const clamped =
-              nInput !== "" && Number.isFinite(parsed)
-                ? Math.min(MAX_N, Math.max(MIN_N, parsed))
-                : DEFAULT_N;
-            setN(clamped);
-            setNInput(String(clamped));
-          }}
-          filter={filter}
-          onFilterChange={(value) => {
-            setFilter(value);
-            setPageOffset(0);
-            if (value !== "custom") {
-              fetchPhotos(n, value, "", "", 0, randomness);
-            }
-          }}
-          startDate={startDate}
-          endDate={endDate}
-          onStartDateChange={(value) => {
-            setStartDate(value);
-            setPageOffset(0);
-            fetchPhotos(n, filter, value, endDate, 0, randomness);
-          }}
-          onEndDateChange={(value) => {
-            setEndDate(value);
-            setPageOffset(0);
-            fetchPhotos(n, filter, startDate, value, 0, randomness);
-          }}
-          randomness={randomness}
-          onRandomnessChange={setRandomness}
-          selectedCount={selectedIds.size}
-          totalCount={photos.length}
-          onSelectAll={selectAllPhotos}
-          onShareSelected={shareSelectedPhotos}
-          sharingSelected={sharingSelected}
-          isNarrow={isNarrow}
-          isAllFilter={isAllFilter}
-          loading={loading}
-          onFetchAll={() => fetchPhotos(n, "all", "", "", 0, randomness)}
-          onPrevPage={() => fetchPhotos(n, filter, startDate, endDate, pageOffset - n, randomness)}
-          onNextPage={() => fetchPhotos(n, filter, startDate, endDate, pageOffset + n, randomness)}
-          showMasonryCols={photos.length > 3 || pinterestMode}
-          masonryCols={masonryCols}
-          onDecrementMasonryCols={() => updateMasonryCols(masonryCols - 1)}
-          onIncrementMasonryCols={() => updateMasonryCols(masonryCols + 1)}
-          pinterestMode={pinterestMode}
-          onTogglePinterestMode={() => setPinterestMode((v) => !v)}
+          onOpenSidebar={() => setSidebarOpen(true)}
         />
+      )}
 
-        <LifeTimeRandomSlides
-          photos={photos}
-          batch={batch}
-          currentIndex={currentIndex}
-          light={light}
-          loading={loading}
-          isNarrow={isNarrow}
-          showSingle={showSingle}
-          pinterestMode={pinterestMode}
-          selectedPhoto={selectedPhoto}
-          setSelectedPhoto={setSelectedPhoto}
-          onPhotoTap={handlePhotoTap}
-          onRotatePhoto={rotatePhoto}
-          goPrev={goPrev}
-          goNext={goNext}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          cardDragStyle={cardDragStyle}
-          likeOpacity={likeOpacity}
-          dislikeOpacity={dislikeOpacity}
-          selectedIds={selectedIds}
-          onToggleSelectPhoto={toggleSelectPhoto}
-          masonryCols={masonryCols}
-        />
-      </div>
+      {showBackHint && (
+        <div
+          className={`pointer-events-none fixed inset-x-0 z-[70] flex justify-center px-4 ${
+            isNarrow ? "bottom-28" : "bottom-6"
+          }`}
+        >
+          <div
+            className={`rounded-full border-2 px-4 py-2 text-sm shadow-2xl backdrop-blur-sm ${
+              light ? "border-blue-300/60 bg-white/90 text-gray-700" : "border-pink-300/40 bg-black/80 text-white"
+            }`}
+          >
+            Tap back again to exit
+          </div>
+        </div>
+      )}
+
+      {isNarrow && !showSingle && (pinterestMode || photos.length > 3) && photos.length > 0 && (
+        <button
+          onClick={handleScreenshotCapture}
+          disabled={screenshotCapturing}
+          aria-label="Screenshot collage"
+          className={`fixed right-8 bottom-30 z-20 flex h-12 w-12 items-center justify-center rounded-full border-2 shadow-lg backdrop-blur-sm disabled:opacity-60 cursor-pointer active:scale-95 ${
+            light ? "border-blue-300/60 bg-white/90 text-gray-700" : "border-pink-300/50 bg-black/80 text-white"
+          }`}
+        >
+          {screenshotCapturing ? (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="h-5 w-5 animate-spin">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" opacity="0.25" />
+              <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
+          )}
+        </button>
+      )}
 
       {error && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-6 z-[70] flex justify-center px-4">
+        <div
+          className={`pointer-events-none fixed inset-x-0 z-[70] flex justify-center px-4 ${
+            isNarrow ? "bottom-28" : "bottom-6"
+          }`}
+        >
           <div
             className={`pointer-events-auto flex items-center gap-3 rounded-full border-2 px-5 py-3 text-sm shadow-2xl backdrop-blur-sm ${
               light
-                ? "border-pink-300/60 bg-white/90 text-gray-700"
+                ? "border-blue-300/60 bg-white/90 text-gray-700"
                 : "border-pink-300/40 bg-black/80 text-white"
             }`}
           >
@@ -433,7 +572,7 @@ export default function LifeTimeRandom({
                 const p = lastFetchParamsRef.current;
                 if (p) fetchPhotos(p.count, p.filterValue, p.start, p.end, p.offset, p.randomnessValue);
               }}
-              className="shrink-0 rounded-full bg-gradient-to-r from-pink-400 to-purple-400 px-3 py-1 font-medium text-white cursor-pointer"
+              className={`shrink-0 rounded-full px-3 py-1 font-medium text-white cursor-pointer ${accentGradientClass(light)}`}
             >
               Retry
             </button>
