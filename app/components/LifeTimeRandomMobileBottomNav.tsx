@@ -46,7 +46,6 @@ interface LifeTimeRandomMobileBottomNavProps {
   slideshow: boolean;
   paused: boolean;
   onToggleSlideshow: () => void;
-  onTogglePause: () => void;
   onOpenSidebar: () => void;
 }
 
@@ -64,37 +63,14 @@ export default function LifeTimeRandomMobileBottomNav({
   slideshow,
   paused,
   onToggleSlideshow,
-  onTogglePause,
   onOpenSidebar,
 }: LifeTimeRandomMobileBottomNavProps) {
+  const showPlayIcon = !slideshow || paused;
   const allSelected = totalCount > 0 && selectedCount === totalCount;
   const barClass = light ? "border-blue-200 bg-white/90 text-gray-700" : "border-pink-300/30 bg-black/90 text-white";
 
   return (
     <div className="relative shrink-0">
-      {slideshow && (
-        <div className="absolute inset-x-0 bottom-full z-20 mb-3 flex justify-center px-4">
-          <button
-            onClick={onTogglePause}
-            aria-label={paused ? "Resume slideshow" : "Pause slideshow"}
-            className={`flex h-10 w-10 items-center justify-center rounded-full border-2 shadow-xl backdrop-blur-sm cursor-pointer ${
-              light ? "border-blue-300/50 bg-white/90 text-gray-700" : "border-pink-300/40 bg-black/80 text-white"
-            }`}
-          >
-            {paused ? (
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
-                <rect x="6" y="5" width="4" height="14" />
-                <rect x="14" y="5" width="4" height="14" />
-              </svg>
-            )}
-          </button>
-        </div>
-      )}
-
       <div
         className={`relative z-20 flex items-center justify-around border-t-2 px-2 pt-1 backdrop-blur-md ${barClass}`}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.5rem)" }}
@@ -155,17 +131,17 @@ export default function LifeTimeRandomMobileBottomNav({
 
         <NavIconButton
           onClick={onToggleSlideshow}
-          label={slideshow ? "Stop slideshow" : "Start slideshow"}
-          text={slideshow ? "Stop" : "Slideshow"}
+          label={!slideshow ? "Start slideshow" : paused ? "Resume slideshow" : "Stop slideshow"}
+          text={!slideshow ? "Slideshow" : paused ? "Resume" : "Stop"}
           light={light}
         >
-          {slideshow ? (
+          {showPlayIcon ? (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-              <rect x="6" y="6" width="12" height="12" rx="2" />
+              <path d="M8 5v14l11-7z" />
             </svg>
           ) : (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-              <path d="M8 5v14l11-7z" />
+              <rect x="6" y="6" width="12" height="12" rx="2" />
             </svg>
           )}
         </NavIconButton>

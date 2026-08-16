@@ -519,7 +519,7 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
       <div className="relative mt-4 w-full sm:mt-4">
         {loading && (
           <div className="absolute inset-0 z-20 flex items-center justify-center py-10">
-            <div className="h-10 w-40 rounded-2xl skeleton-shimmer"></div>
+            <div className="aspect-[2/3] w-[82%] sm:w-[70%] max-w-md rounded-3xl skeleton-shimmer"></div>
           </div>
         )}
 

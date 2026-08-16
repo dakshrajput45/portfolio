@@ -7,11 +7,8 @@ import LifeTimeRandomHeaderMobile from "./LifeTimeRandomHeaderMobile";
 import LifeTimeRandomMobileBottomNav from "./LifeTimeRandomMobileBottomNav";
 import {
   accentGradientClass,
-  buildHeaderControls,
   DEFAULT_N,
-  FILTERS,
   FilterValue,
-  HeaderControlsProps,
   MAX_MASONRY_COLS,
   MAX_N,
   MIN_MASONRY_COLS,
@@ -268,7 +265,12 @@ export default function LifeTimeRandom({
     if (selectedPhoto && slideshow) setPaused(true);
   }, [selectedPhoto, slideshow]);
 
-  useBackToClose(!!selectedPhoto, () => setSelectedPhoto(null));
+  const closePhotoDetail = () => {
+    setSelectedPhoto(null);
+    if (slideshow) setPaused(false);
+  };
+
+  useBackToClose(!!selectedPhoto, closePhotoDetail);
   useBackToClose(sidebarOpen, () => setSidebarOpen(false));
   useDoubleBackToExit(
     isNarrow && !selectedPhoto && !sidebarOpen,
@@ -425,8 +427,6 @@ export default function LifeTimeRandom({
     onTogglePinterestMode: () => setPinterestMode((v) => !v),
   };
 
-  const { dateRangeRow: quickDateRangeRow } = buildHeaderControls(headerControlsProps as HeaderControlsProps);
-
   return createPortal(
     <div
       className={`fixed inset-0 z-50 flex flex-col transition-colors duration-300 ${
@@ -458,31 +458,6 @@ export default function LifeTimeRandom({
               onToggleLight={() => setLight((v) => !v)}
             />
           )}
-
-          {isNarrow && (
-            <div className="w-full sm:hidden">
-              <div
-                className="-mx-3 flex gap-1.5 overflow-x-auto px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-              >
-                {FILTERS.map((f) => (
-                  <button
-                    key={f.value}
-                    onClick={() => headerControlsProps.onFilterChange(f.value)}
-                    className={`shrink-0 rounded-full border-2 px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
-                      filter === f.value
-                        ? `border-transparent text-white ${accentGradientClass(light)}`
-                        : light
-                          ? "border-blue-200/50 bg-white/70 text-gray-700 hover:bg-blue-100"
-                          : "border-pink-300/30 bg-black/30 text-white hover:bg-pink-300/10"
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-              {filter === "custom" && <div className="mt-2 flex justify-center">{quickDateRangeRow}</div>}
-            </div>
-          )}
         </div>
       </div>
 
@@ -501,7 +476,7 @@ export default function LifeTimeRandom({
             showSingle={showSingle}
             pinterestMode={pinterestMode}
             selectedPhoto={selectedPhoto}
-            setSelectedPhoto={setSelectedPhoto}
+            setSelectedPhoto={(photo) => (photo === null ? closePhotoDetail() : setSelectedPhoto(photo))}
             onPhotoTap={handlePhotoTap}
             onRotatePhoto={rotatePhoto}
             goPrev={goPrev}
@@ -536,10 +511,13 @@ export default function LifeTimeRandom({
           slideshow={slideshow}
           paused={paused}
           onToggleSlideshow={() => {
-            setSlideshow((v) => !v);
-            setPaused(false);
+            if (slideshow && paused) {
+              setPaused(false);
+            } else {
+              setSlideshow((v) => !v);
+              setPaused(false);
+            }
           }}
-          onTogglePause={() => setPaused((p) => !p)}
           onOpenSidebar={() => setSidebarOpen(true)}
         />
       )}
