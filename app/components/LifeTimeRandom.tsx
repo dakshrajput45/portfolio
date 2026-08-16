@@ -604,32 +604,26 @@ export default function LifeTimeRandom({
 
       {isNarrow && (photos.length > 3 || pinterestMode) && (
         <div
-          className={`fixed left-8 bottom-30 z-20 flex items-center gap-1 rounded-full border-2 px-2 py-2 shadow-lg backdrop-blur-sm ${
+          className={`fixed left-1/2 bottom-30 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full border-2 px-2 py-2 shadow-lg backdrop-blur-sm ${
             light ? "border-blue-300/60 bg-white/90 text-gray-700" : "border-pink-300/50 bg-black/80 text-white"
           }`}
         >
           <button
             onClick={() => updateMasonryCols(masonryCols - 1)}
             disabled={masonryCols <= MIN_MASONRY_COLS}
-            aria-label="Bigger photos, fewer columns"
-            className="flex h-7 w-7 items-center justify-center rounded-full disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+            aria-label="Fewer columns"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-base font-semibold disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-              <circle cx="10" cy="10" r="6" />
-              <path d="M21 21l-4.3-4.3M10 7v6M7 10h6" />
-            </svg>
+            −
           </button>
           <span className="w-4 text-center text-xs font-semibold tabular-nums">{masonryCols}</span>
           <button
             onClick={() => updateMasonryCols(masonryCols + 1)}
             disabled={masonryCols >= MAX_MASONRY_COLS}
-            aria-label="Smaller photos, more columns"
-            className="flex h-7 w-7 items-center justify-center rounded-full disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+            aria-label="More columns"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-base font-semibold disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-              <circle cx="10" cy="10" r="6" />
-              <path d="M21 21l-4.3-4.3M7 10h6" />
-            </svg>
+            +
           </button>
         </div>
       )}
