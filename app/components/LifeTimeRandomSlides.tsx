@@ -1,7 +1,7 @@
 import { forwardRef, useImperativeHandle, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { toPng } from "html-to-image";
-import { accentGradientClass, MAX_MASONRY_COLS, MIN_MASONRY_COLS } from "./LifeTimeRandomHeaderShared";
+import { accentGradientClass } from "./LifeTimeRandomHeaderShared";
 
 export interface Photo {
   id: string;
@@ -354,7 +354,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-export async function captureCollage(node: HTMLElement, light: boolean) {
+async function composeCollage(node: HTMLElement, light: boolean): Promise<Blob> {
   const backgroundColor = light ? "#ffffff" : "#000000";
   const collageDataUrl = await toPng(node, {
     backgroundColor,
@@ -370,7 +370,7 @@ export async function captureCollage(node: HTMLElement, light: boolean) {
   canvas.width = collageImg.width + margin * 2;
   canvas.height = collageImg.height + titleHeight + margin * 2;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+  if (!ctx) throw new Error("Canvas 2D context unavailable");
 
   ctx.fillStyle = backgroundColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -414,17 +414,49 @@ export async function captureCollage(node: HTMLElement, light: boolean) {
 
   ctx.drawImage(collageImg, margin, margin + titleHeight);
 
-  const dataUrl = canvas.toDataURL("image/png");
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Failed to encode image"))), "image/png");
+  });
+}
+
+function collageFileName() {
+  return `daksh-vanshika-${Date.now()}.png`;
+}
+
+function downloadBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = dataUrl;
-  a.download = `daksh-vanshika-${Date.now()}.png`;
+  a.href = url;
+  a.download = fileName;
   document.body.appendChild(a);
   a.click();
   a.remove();
+  URL.revokeObjectURL(url);
+}
+
+export async function downloadCollage(node: HTMLElement, light: boolean) {
+  const blob = await composeCollage(node, light);
+  downloadBlob(blob, collageFileName());
+}
+
+export async function shareCollage(node: HTMLElement, light: boolean) {
+  const blob = await composeCollage(node, light);
+  const fileName = collageFileName();
+  const file = new File([blob], fileName, { type: "image/png" });
+
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] });
+      return;
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+    }
+  }
+  downloadBlob(blob, fileName);
 }
 
 export interface LifeTimeRandomSlidesHandle {
-  captureScreenshot: () => Promise<void>;
+  captureScreenshot: (mode: "share" | "download") => Promise<void>;
 }
 
 interface LifeTimeRandomSlidesProps {
@@ -453,9 +485,6 @@ interface LifeTimeRandomSlidesProps {
   selectedIds: Set<string>;
   onToggleSelectPhoto: (id: string) => void;
   masonryCols: number;
-  showMasonryCols: boolean;
-  onDecrementMasonryCols: () => void;
-  onIncrementMasonryCols: () => void;
 }
 
 const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRandomSlidesProps>(function LifeTimeRandomSlides({
@@ -484,9 +513,6 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
   selectedIds,
   onToggleSelectPhoto,
   masonryCols,
-  showMasonryCols,
-  onDecrementMasonryCols,
-  onIncrementMasonryCols,
 }, ref) {
   const rawCols = Math.ceil(Math.sqrt(photos.length || 1));
   const cols = isNarrow ? Math.min(rawCols, 2) : photos.length > 0 && photos.length <= 3 ? photos.length : rawCols;
@@ -495,11 +521,11 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
   const [capturing, setCapturing] = useState(false);
 
   useImperativeHandle(ref, () => ({
-    captureScreenshot: async () => {
+    captureScreenshot: async (mode) => {
       if (!masonryRef.current || capturing) return;
       setCapturing(true);
       try {
-        await captureCollage(masonryRef.current, light);
+        await (mode === "share" ? shareCollage : downloadCollage)(masonryRef.current, light);
       } catch (err) {
         console.error("Screenshot failed:", err);
       } finally {
@@ -512,7 +538,7 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
     if (!masonryRef.current || capturing) return;
     setCapturing(true);
     try {
-      await captureCollage(masonryRef.current, light);
+      await downloadCollage(masonryRef.current, light);
     } catch (err) {
       console.error("Screenshot failed:", err);
     } finally {
@@ -638,38 +664,6 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
                 </svg>
                 {capturing ? "Capturing…" : "Screenshot"}
               </button>
-            )}
-
-            {isNarrow && showMasonryCols && (
-              <div
-                className={`absolute -top-2 right-0 z-10 flex items-center gap-0.5 rounded-full border-2 px-1.5 py-1.5 backdrop-blur-sm ${
-                  light ? "border-blue-300/60 bg-white/80 text-gray-700" : "border-pink-300/50 bg-black/60 text-white"
-                }`}
-              >
-                <button
-                  onClick={onDecrementMasonryCols}
-                  disabled={masonryCols <= MIN_MASONRY_COLS}
-                  aria-label="Bigger photos, fewer columns"
-                  className="flex h-6 w-6 items-center justify-center rounded-full disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-                    <circle cx="10" cy="10" r="6" />
-                    <path d="M21 21l-4.3-4.3M10 7v6M7 10h6" />
-                  </svg>
-                </button>
-                <span className="w-3 text-center text-[11px] font-semibold tabular-nums">{masonryCols}</span>
-                <button
-                  onClick={onIncrementMasonryCols}
-                  disabled={masonryCols >= MAX_MASONRY_COLS}
-                  aria-label="Smaller photos, more columns"
-                  className="flex h-6 w-6 items-center justify-center rounded-full disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-                    <circle cx="10" cy="10" r="6" />
-                    <path d="M21 21l-4.3-4.3M7 10h6" />
-                  </svg>
-                </button>
-              </div>
             )}
             <div
               ref={masonryRef}

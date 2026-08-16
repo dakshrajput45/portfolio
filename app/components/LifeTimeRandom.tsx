@@ -181,12 +181,14 @@ export default function LifeTimeRandom({
   };
 
   const [screenshotCapturing, setScreenshotCapturing] = useState(false);
+  const [screenshotMenuOpen, setScreenshotMenuOpen] = useState(false);
   const slidesRef = useRef<LifeTimeRandomSlidesHandle>(null);
-  const handleScreenshotCapture = async () => {
+  const handleScreenshotCapture = async (mode: "share" | "download") => {
     if (screenshotCapturing) return;
+    setScreenshotMenuOpen(false);
     setScreenshotCapturing(true);
     try {
-      await slidesRef.current?.captureScreenshot();
+      await slidesRef.current?.captureScreenshot(mode);
     } finally {
       setScreenshotCapturing(false);
     }
@@ -492,9 +494,6 @@ export default function LifeTimeRandom({
             selectedIds={selectedIds}
             onToggleSelectPhoto={toggleSelectPhoto}
             masonryCols={masonryCols}
-            showMasonryCols={photos.length > 3 || pinterestMode}
-            onDecrementMasonryCols={() => updateMasonryCols(masonryCols - 1)}
-            onIncrementMasonryCols={() => updateMasonryCols(masonryCols + 1)}
           />
         </div>
       </div>
@@ -542,26 +541,97 @@ export default function LifeTimeRandom({
       )}
 
       {isNarrow && !showSingle && (pinterestMode || photos.length > 3) && photos.length > 0 && (
-        <button
-          onClick={handleScreenshotCapture}
-          disabled={screenshotCapturing}
-          aria-label="Screenshot collage"
-          className={`fixed right-8 bottom-30 z-20 flex h-12 w-12 items-center justify-center rounded-full border-2 shadow-lg backdrop-blur-sm disabled:opacity-60 cursor-pointer active:scale-95 ${
+        <div className="fixed right-8 bottom-30 z-20">
+          {screenshotMenuOpen && (
+            <>
+              <button
+                onClick={() => handleScreenshotCapture("share")}
+                aria-label="Share screenshot"
+                style={{ transform: "translate(-30px, -52px)" }}
+                className={`absolute inset-0 flex h-11 w-11 items-center justify-center rounded-full border-2 shadow-lg backdrop-blur-sm cursor-pointer transition-transform active:scale-95 ${
+                  light ? "border-blue-300/60 bg-white/95 text-gray-700" : "border-pink-300/50 bg-black/90 text-white"
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+                </svg>
+              </button>
+              <button
+                onClick={() => handleScreenshotCapture("download")}
+                aria-label="Download screenshot"
+                style={{ transform: "translate(30px, -52px)" }}
+                className={`absolute inset-0 flex h-11 w-11 items-center justify-center rounded-full border-2 shadow-lg backdrop-blur-sm cursor-pointer transition-transform active:scale-95 ${
+                  light ? "border-blue-300/60 bg-white/95 text-gray-700" : "border-pink-300/50 bg-black/90 text-white"
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                  <path d="M12 3v12m0 0l-4-4m4 4l4-4" />
+                  <path d="M4 19h16" />
+                </svg>
+              </button>
+            </>
+          )}
+          <button
+            onClick={() => (screenshotCapturing ? undefined : setScreenshotMenuOpen((v) => !v))}
+            disabled={screenshotCapturing}
+            aria-label={screenshotMenuOpen ? "Close screenshot options" : "Screenshot collage"}
+            aria-expanded={screenshotMenuOpen}
+            className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 shadow-lg backdrop-blur-sm transition-transform disabled:opacity-60 cursor-pointer active:scale-95 ${
+              light ? "border-blue-300/60 bg-white/90 text-gray-700" : "border-pink-300/50 bg-black/80 text-white"
+            }`}
+          >
+            {screenshotCapturing ? (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="h-5 w-5 animate-spin">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" opacity="0.25" />
+                <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            ) : screenshotMenuOpen ? (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+            )}
+          </button>
+        </div>
+      )}
+
+      {isNarrow && (photos.length > 3 || pinterestMode) && (
+        <div
+          className={`fixed left-8 bottom-30 z-20 flex items-center gap-1 rounded-full border-2 px-2 py-2 shadow-lg backdrop-blur-sm ${
             light ? "border-blue-300/60 bg-white/90 text-gray-700" : "border-pink-300/50 bg-black/80 text-white"
           }`}
         >
-          {screenshotCapturing ? (
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="h-5 w-5 animate-spin">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" opacity="0.25" />
-              <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <button
+            onClick={() => updateMasonryCols(masonryCols - 1)}
+            disabled={masonryCols <= MIN_MASONRY_COLS}
+            aria-label="Bigger photos, fewer columns"
+            className="flex h-7 w-7 items-center justify-center rounded-full disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <circle cx="10" cy="10" r="6" />
+              <path d="M21 21l-4.3-4.3M10 7v6M7 10h6" />
             </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-              <circle cx="12" cy="13" r="4" />
+          </button>
+          <span className="w-4 text-center text-xs font-semibold tabular-nums">{masonryCols}</span>
+          <button
+            onClick={() => updateMasonryCols(masonryCols + 1)}
+            disabled={masonryCols >= MAX_MASONRY_COLS}
+            aria-label="Smaller photos, more columns"
+            className="flex h-7 w-7 items-center justify-center rounded-full disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <circle cx="10" cy="10" r="6" />
+              <path d="M21 21l-4.3-4.3M7 10h6" />
             </svg>
-          )}
-        </button>
+          </button>
+        </div>
       )}
 
       {error && (
