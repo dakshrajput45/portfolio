@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+
+export const DRAWER_TRANSITION_MS = 250;
 
 export const MIN_N = 1;
 export const MAX_N = 9;
@@ -135,6 +138,151 @@ export function cornerButtonClass(light: boolean) {
   return light
     ? "z-10 flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-blue-300/60 bg-white/70 text-gray-700 backdrop-blur-sm transition-colors hover:border-blue-400 hover:bg-blue-100 cursor-pointer"
     : "z-10 flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-pink-300/50 bg-black/50 text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer";
+}
+
+export function SidebarDrawer({
+  open,
+  onClose,
+  light,
+  title,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  light: boolean;
+  title: string;
+  children: React.ReactNode;
+}) {
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [prevOpen, setPrevOpen] = useState(open);
+
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      setMounted(true);
+    } else {
+      setVisible(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!open || !mounted) return;
+    const raf = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(raf);
+  }, [open, mounted]);
+
+  useEffect(() => {
+    if (open || !mounted) return;
+    const timer = setTimeout(() => setMounted(false), DRAWER_TRANSITION_MS);
+    return () => clearTimeout(timer);
+  }, [open, mounted]);
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[80] flex justify-end">
+      <div
+        className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity ease-out ${
+          visible ? "opacity-100" : "opacity-0"
+        }`}
+        style={{ transitionDuration: `${DRAWER_TRANSITION_MS}ms` }}
+        onClick={onClose}
+      />
+      <div
+        className={`relative flex h-full w-[68%] max-w-[280px] flex-col gap-6 overflow-y-auto px-5 py-6 shadow-2xl transition-transform ease-out ${
+          visible ? "translate-x-0" : "translate-x-full"
+        } ${light ? "bg-white text-gray-900" : "bg-gray-950 text-white"}`}
+        style={{ transitionDuration: `${DRAWER_TRANSITION_MS}ms` }}
+      >
+        <div className="flex items-center justify-between">
+          <span className="text-base font-semibold">{title}</span>
+          <button
+            onClick={onClose}
+            aria-label="Close menu"
+            className={
+              light ? "flex h-8 w-8 items-center justify-center rounded-full border-2 border-blue-300/60 bg-white/70 text-gray-700 cursor-pointer": "flex h-8 w-8 items-center justify-center rounded-full border-2 border-pink-300/50 bg-black/50 text-white cursor-pointer"
+            }
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+export function NavIconButton({
+  onClick,
+  label,
+  text,
+  light,
+  disabled = false,
+  children,
+}: {
+  onClick: () => void;
+  label: string;
+  text: string;
+  light: boolean;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className={`relative flex w-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1 transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed ${
+        light ? "text-gray-700 hover:bg-pink-100" : "text-white hover:bg-pink-300/10"
+      }`}
+    >
+      {children}
+      <span className="text-[10px] font-medium leading-none whitespace-nowrap">{text}</span>
+    </button>
+  );
+}
+
+export function ShareCornerButton({
+  onClick,
+  disabled,
+  selectedCount,
+  light,
+  positionClassName,
+}: {
+  onClick: () => void;
+  disabled: boolean;
+  selectedCount: number;
+  light: boolean;
+  positionClassName: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={selectedCount > 0 ? `Share ${selectedCount} selected` : "Select photos to share"}
+      className={`${positionClassName} disabled:opacity-40 disabled:cursor-not-allowed ${cornerButtonClass(light)}`}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+        <circle cx="18" cy="5" r="3" />
+        <circle cx="6" cy="12" r="3" />
+        <circle cx="18" cy="19" r="3" />
+        <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+      </svg>
+      {selectedCount > 0 && (
+        <span
+          className={`absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white ${
+            light ? "bg-blue-500" : "bg-pink-500"
+          }`}
+        >
+          {selectedCount}
+        </span>
+      )}
+    </button>
+  );
 }
 
 export function BackButton({ onClick, light }: { onClick: () => void; light: boolean }) {

@@ -1,36 +1,6 @@
 "use client";
 
-import { accentGradientClass, accentShadowClass } from "./LifeTimeRandomHeaderShared";
-
-function NavIconButton({
-  onClick,
-  label,
-  text,
-  light,
-  disabled = false,
-  children,
-}: {
-  onClick: () => void;
-  label: string;
-  text: string;
-  light: boolean;
-  disabled?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-      className={`relative flex w-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1 transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed ${
-        light ? "text-gray-700 hover:bg-pink-100" : "text-white hover:bg-pink-300/10"
-      }`}
-    >
-      {children}
-      <span className="text-[10px] font-medium leading-none whitespace-nowrap">{text}</span>
-    </button>
-  );
-}
+import { accentGradientClass, accentShadowClass, NavIconButton } from "./LifeTimeRandomHeaderShared";
 
 interface LifeTimeRandomMobileBottomNavProps {
   light: boolean;

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import LifeTimeRandomHeaderDesktop from "./LifeTimeRandomHeaderDesktop";
 import LifeTimeRandomHeaderMobile from "./LifeTimeRandomHeaderMobile";
 import LifeTimeRandomMobileBottomNav from "./LifeTimeRandomMobileBottomNav";
+import LifeTimeRandomSidebarDesktop from "./LifeTimeRandomSidebarDesktop";
 import {
   accentGradientClass,
   DEFAULT_N,
@@ -56,6 +57,7 @@ export default function LifeTimeRandom({
   const [pinterestMode, setPinterestMode] = useState(false);
   const [masonryCols, setMasonryCols] = useState(2);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState(true);
   const [showBackHint, setShowBackHint] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -83,8 +85,7 @@ export default function LifeTimeRandom({
       start: string,
       end: string,
       offset: number,
-      randomnessValue: number,
-      append = false
+      randomnessValue: number
     ) => {
       lastFetchParamsRef.current = { count, filterValue, start, end, offset, randomnessValue };
       setLoading(true);
@@ -111,13 +112,9 @@ export default function LifeTimeRandom({
           const data = await res.json();
           const fetched = data.photos as Omit<Photo, "rotation">[];
           const withRotation = fetched.map((p) => ({ ...p, rotation: 0 }));
-          if (append) {
-            setPhotos((prev) => [...prev, ...withRotation]);
-          } else {
-            setPhotos(withRotation);
-            setCurrentIndex(0);
-            setSelectedIds(new Set());
-          }
+          setPhotos(withRotation);
+          setCurrentIndex(0);
+          setSelectedIds(new Set());
           fetched.forEach((p) => {
             if (!p.isVideo) {
               const img = new window.Image();
@@ -420,8 +417,8 @@ export default function LifeTimeRandom({
     isAllFilter,
     loading,
     onFetchAll: () => fetchPhotos(n, "all", "", "", 0, randomness),
-    onLoadMore: () => fetchPhotos(n, filter, startDate, endDate, pageOffset + n, randomness, true),
-    showMasonryCols: photos.length > 3 || pinterestMode,
+    onLoadMore: () => fetchPhotos(n, filter, startDate, endDate, pageOffset + n, randomness),
+    showMasonryCols: photos.length > 3,
     masonryCols,
     onDecrementMasonryCols: () => updateMasonryCols(masonryCols - 1),
     onIncrementMasonryCols: () => updateMasonryCols(masonryCols + 1),
@@ -439,97 +436,102 @@ export default function LifeTimeRandom({
         <div className={`absolute top-1/4 left-1/4 h-96 w-96 rounded-full blur-3xl ${accentGradientClass(light)}`}></div>
       </div>
 
-      <div
-        className={`relative z-10 shrink-0 border-b-2 px-3 pt-3 pb-3 sm:px-4 sm:pt-4 sm:pb-4 ${
-          light ? "border-blue-200/50" : "border-pink-300/15"
-        }`}
-      >
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 sm:gap-3">
-          {isNarrow ? (
-            <LifeTimeRandomHeaderMobile
-              {...headerControlsProps}
-              onClose={onClose}
-              onToggleLight={() => setLight((v) => !v)}
-              sidebarOpen={sidebarOpen}
-              onCloseSidebar={() => setSidebarOpen(false)}
-            />
-          ) : (
-            <LifeTimeRandomHeaderDesktop
-              {...headerControlsProps}
-              onClose={onClose}
-              onToggleLight={() => setLight((v) => !v)}
-            />
-          )}
-        </div>
-      </div>
+      <div className="relative z-10 flex flex-1 overflow-hidden">
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <div
+            className={`relative shrink-0 border-b-2 px-3 pt-3 pb-3 sm:px-4 sm:pt-4 sm:pb-4 ${
+              light ? "border-blue-200/50" : "border-pink-300/15"
+            }`}
+          >
+            <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 sm:gap-3">
+              {isNarrow ? (
+                <LifeTimeRandomHeaderMobile
+                  {...headerControlsProps}
+                  onClose={onClose}
+                  onToggleLight={() => setLight((v) => !v)}
+                  sidebarOpen={sidebarOpen}
+                  onCloseSidebar={() => setSidebarOpen(false)}
+                />
+              ) : (
+                <LifeTimeRandomHeaderDesktop {...headerControlsProps} onClose={onClose} />
+              )}
+            </div>
+          </div>
 
-      <div
-        className={`relative z-10 flex-1 overflow-y-auto px-3 sm:px-4 sm:py-4 ${showSingle ? "flex flex-col justify-center" : ""}`}
-      >
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 sm:gap-3">
-          <LifeTimeRandomSlides
-            ref={slidesRef}
-            photos={photos}
-            batch={batch}
-            currentIndex={currentIndex}
-            light={light}
-            loading={loading}
-            isNarrow={isNarrow}
-            showSingle={showSingle}
-            pinterestMode={pinterestMode}
-            selectedPhoto={selectedPhoto}
-            setSelectedPhoto={(photo) => (photo === null ? closePhotoDetail() : setSelectedPhoto(photo))}
-            onPhotoTap={handlePhotoTap}
-            onRotatePhoto={rotatePhoto}
-            goPrev={goPrev}
-            goNext={goNext}
-            onMaxViewPrev={() => goToAdjacentPhoto(-1)}
-            onMaxViewNext={() => goToAdjacentPhoto(1)}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            cardDragStyle={cardDragStyle}
-            likeOpacity={likeOpacity}
-            dislikeOpacity={dislikeOpacity}
-            selectedIds={selectedIds}
-            onToggleSelectPhoto={toggleSelectPhoto}
-            masonryCols={masonryCols}
+          <div
+            className={`flex-1 overflow-y-auto px-3 sm:px-4 sm:py-4 ${showSingle ? "flex flex-col justify-center" : ""}`}
+          >
+            <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 sm:gap-3">
+              <LifeTimeRandomSlides
+                ref={slidesRef}
+                photos={photos}
+                batch={batch}
+                currentIndex={currentIndex}
+                light={light}
+                loading={loading}
+                isNarrow={isNarrow}
+                showSingle={showSingle}
+                pinterestMode={pinterestMode}
+                selectedPhoto={selectedPhoto}
+                setSelectedPhoto={(photo) => (photo === null ? closePhotoDetail() : setSelectedPhoto(photo))}
+                onPhotoTap={handlePhotoTap}
+                onRotatePhoto={rotatePhoto}
+                goPrev={goPrev}
+                goNext={goNext}
+                onMaxViewPrev={() => goToAdjacentPhoto(-1)}
+                onMaxViewNext={() => goToAdjacentPhoto(1)}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                cardDragStyle={cardDragStyle}
+                likeOpacity={likeOpacity}
+                dislikeOpacity={dislikeOpacity}
+                selectedIds={selectedIds}
+                onToggleSelectPhoto={toggleSelectPhoto}
+                masonryCols={masonryCols}
+              />
+            </div>
+          </div>
+        </div>
+
+        {!isNarrow && (
+          <LifeTimeRandomSidebarDesktop
+            {...headerControlsProps}
+            open={desktopMenuOpen}
+            onToggleLight={() => setLight((v) => !v)}
+            showScreenshot={photos.length > 0}
+            screenshotCapturing={screenshotCapturing}
+            onCaptureScreenshot={handleScreenshotCapture}
           />
-        </div>
+        )}
       </div>
 
-      {isNarrow && (
-        <LifeTimeRandomMobileBottomNav
-          light={light}
-          selectedCount={selectedIds.size}
-          totalCount={photos.length}
-          onSelectAll={selectAllPhotos}
-          pinterestMode={pinterestMode}
-          onTogglePinterestMode={() => setPinterestMode((v) => !v)}
-          isAllFilter={isAllFilter}
-          loading={loading}
-          onFetchAll={() => fetchPhotos(n, "all", "", "", 0, randomness)}
-          onLoadMore={() => fetchPhotos(n, filter, startDate, endDate, pageOffset + n, randomness, true)}
-          slideshow={slideshow}
-          paused={paused}
-          onToggleSlideshow={() => {
-            if (slideshow && paused) {
-              setPaused(false);
-            } else {
-              setSlideshow((v) => !v);
-              setPaused(false);
-            }
-          }}
-          onOpenSidebar={() => setSidebarOpen(true)}
-        />
-      )}
+      <LifeTimeRandomMobileBottomNav
+        light={light}
+        selectedCount={selectedIds.size}
+        totalCount={photos.length}
+        onSelectAll={selectAllPhotos}
+        pinterestMode={pinterestMode}
+        onTogglePinterestMode={() => setPinterestMode((v) => !v)}
+        isAllFilter={isAllFilter}
+        loading={loading}
+        onFetchAll={() => fetchPhotos(n, "all", "", "", 0, randomness)}
+        onLoadMore={() => fetchPhotos(n, filter, startDate, endDate, pageOffset + n, randomness)}
+        slideshow={slideshow}
+        paused={paused}
+        onToggleSlideshow={() => {
+          if (slideshow && paused) {
+            setPaused(false);
+          } else {
+            setSlideshow((v) => !v);
+            setPaused(false);
+          }
+        }}
+        onOpenSidebar={() => (isNarrow ? setSidebarOpen(true) : setDesktopMenuOpen((v) => !v))}
+      />
 
       {showBackHint && (
-        <div
-          className={`pointer-events-none fixed inset-x-0 z-[70] flex justify-center px-4 ${
-            isNarrow ? "bottom-28" : "bottom-6"
-          }`}
-        >
+        <div className="pointer-events-none fixed inset-x-0 z-[70] flex justify-center px-4 bottom-28">
           <div
             className={`rounded-full border-2 px-4 py-2 text-sm shadow-2xl backdrop-blur-sm ${
               light ? "border-blue-300/60 bg-white/90 text-gray-700" : "border-pink-300/40 bg-black/80 text-white"
@@ -540,7 +542,7 @@ export default function LifeTimeRandom({
         </div>
       )}
 
-      {isNarrow && !showSingle && (pinterestMode || photos.length > 3) && photos.length > 0 && (
+      {isNarrow && !showSingle && pinterestMode && photos.length > 0 && (
         <div className="fixed right-8 bottom-30 z-20">
           {screenshotMenuOpen && (
             <>
@@ -602,7 +604,7 @@ export default function LifeTimeRandom({
         </div>
       )}
 
-      {isNarrow && (photos.length > 3 || pinterestMode) && (
+      {isNarrow && pinterestMode && (
         <div
           className={`fixed left-1/2 bottom-30 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full border-2 px-2 py-2 shadow-lg backdrop-blur-sm ${
             light ? "border-blue-300/60 bg-white/90 text-gray-700" : "border-pink-300/50 bg-black/80 text-white"
@@ -629,11 +631,7 @@ export default function LifeTimeRandom({
       )}
 
       {error && (
-        <div
-          className={`pointer-events-none fixed inset-x-0 z-[70] flex justify-center px-4 ${
-            isNarrow ? "bottom-28" : "bottom-6"
-          }`}
-        >
+        <div className="pointer-events-none fixed inset-x-0 z-[70] flex justify-center px-4 bottom-28">
           <div
             className={`pointer-events-auto flex items-center gap-3 rounded-full border-2 px-5 py-3 text-sm shadow-2xl backdrop-blur-sm ${
               light
