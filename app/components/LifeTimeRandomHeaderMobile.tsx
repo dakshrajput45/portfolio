@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  accentGradientClass,
-  accentShadowClass,
   BackButton,
   buildHeaderControls,
+  cornerButtonClass,
   DarkModeIcon,
   HeaderControlsProps,
 } from "./LifeTimeRandomHeaderShared";
@@ -66,27 +65,33 @@ export default function LifeTimeRandomHeaderMobile(props: LifeTimeRandomHeaderMo
         onClick={onShareSelected}
         disabled={sharingSelected || selectedCount === 0}
         aria-label={selectedCount > 0 ? `Share ${selectedCount} selected` : "Select photos to share"}
-        className={`absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white/80 text-white shadow-md backdrop-blur-sm disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed ${accentGradientClass(light)} ${accentShadowClass(light)}`}
+        className={`absolute top-2 right-2 disabled:opacity-40 disabled:cursor-not-allowed ${cornerButtonClass(light)}`}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
           <circle cx="18" cy="5" r="3" />
           <circle cx="6" cy="12" r="3" />
           <circle cx="18" cy="19" r="3" />
           <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
         </svg>
         {selectedCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[9px] font-bold text-pink-500 shadow">
+          <span
+            className={`absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white ${
+              light ? "bg-blue-500" : "bg-pink-500"
+            }`}
+          >
             {selectedCount}
           </span>
         )}
       </button>
 
-      <h1 className="shrink-0 font-sans text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text">
-        See More Of Us
-      </h1>
-      <p className={`shrink-0 text-center text-xs ${light ? "text-gray-500" : "text-white/60"}`}>
-        Straight from our shared Drive folder — if something&apos;s missing, ask your baby to sync it 💕
-      </p>
+      <div className="w-full px-14">
+        <h1 className="shrink-0 font-sans text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text text-center">
+          See More Of Us
+        </h1>
+        <p className={`shrink-0 text-center text-xs ${light ? "text-gray-500" : "text-white/60"}`}>
+          Straight from our shared Drive folder — if something&apos;s missing, ask your baby to sync it 💕
+        </p>
+      </div>
 
       {drawerMounted &&
         createPortal(

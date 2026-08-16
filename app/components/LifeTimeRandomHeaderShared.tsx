@@ -137,16 +137,18 @@ export function DarkModeIcon({ light }: { light: boolean }) {
   );
 }
 
+export function cornerButtonClass(light: boolean) {
+  return light
+    ? "z-10 flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-blue-300/60 bg-white/70 text-gray-700 backdrop-blur-sm transition-colors hover:border-blue-400 hover:bg-blue-100 cursor-pointer"
+    : "z-10 flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-pink-300/50 bg-black/50 text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer";
+}
+
 export function BackButton({ onClick, light }: { onClick: () => void; light: boolean }) {
   return (
     <button
       onClick={onClick}
       aria-label="Back"
-      className={
-        light
-          ? "absolute top-2 left-2 sm:top-6 sm:left-6 z-10 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-blue-300/60 bg-white/70 text-gray-700 backdrop-blur-sm transition-colors hover:border-blue-400 hover:bg-blue-100 cursor-pointer"
-          : "absolute top-2 left-2 sm:top-6 sm:left-6 z-10 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-pink-300/50 bg-black/50 text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
-      }
+      className={`absolute top-2 left-2 sm:top-6 sm:left-6 ${cornerButtonClass(light)}`}
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
         <path d="M15 18l-6-6 6-6" />

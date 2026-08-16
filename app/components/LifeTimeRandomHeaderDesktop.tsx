@@ -1,6 +1,12 @@
 "use client";
 
-import { BackButton, buildHeaderControls, DarkModeIcon, HeaderControlsProps } from "./LifeTimeRandomHeaderShared";
+import {
+  BackButton,
+  buildHeaderControls,
+  cornerButtonClass,
+  DarkModeIcon,
+  HeaderControlsProps,
+} from "./LifeTimeRandomHeaderShared";
 
 interface LifeTimeRandomHeaderDesktopProps extends HeaderControlsProps {
   onClose: () => void;
@@ -19,9 +25,7 @@ export default function LifeTimeRandomHeaderDesktop(props: LifeTimeRandomHeaderD
       <button
         onClick={onToggleLight}
         aria-label={light ? "Switch to dark mode" : "Switch to bright mode"}
-        className={
-          light ? "absolute top-2 right-2 sm:top-6 sm:right-6 z-10 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-blue-300/60 bg-white/70 text-gray-700 backdrop-blur-sm transition-colors hover:border-blue-400 hover:bg-blue-100 cursor-pointer": "absolute top-2 right-2 sm:top-6 sm:right-6 z-10 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 border-pink-300/50 bg-black/50 text-white backdrop-blur-sm transition-colors hover:border-pink-300/90 hover:bg-pink-300/10 cursor-pointer"
-        }
+        className={`absolute top-2 right-2 sm:top-6 sm:right-6 ${cornerButtonClass(light)}`}
       >
         <DarkModeIcon light={light} />
       </button>
