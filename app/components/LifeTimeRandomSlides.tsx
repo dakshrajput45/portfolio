@@ -18,6 +18,7 @@ function RotatablePhoto({
   controls = false,
   natural = false,
   fitHeight = false,
+  onAspectRatio,
 }: {
   photo: Photo;
   className: string;
@@ -25,6 +26,7 @@ function RotatablePhoto({
   controls?: boolean;
   natural?: boolean;
   fitHeight?: boolean;
+  onAspectRatio?: (ratio: number) => void;
 }) {
   const [loaded, setLoaded] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<number | null>(null);
@@ -77,7 +79,11 @@ function RotatablePhoto({
             style={mediaStyle}
             onLoadedMetadata={(e) => {
               const v = e.currentTarget;
-              if (v.videoWidth && v.videoHeight) setAspectRatio(v.videoWidth / v.videoHeight);
+              if (v.videoWidth && v.videoHeight) {
+                const raw = v.videoWidth / v.videoHeight;
+                setAspectRatio(raw);
+                onAspectRatio?.(raw);
+              }
             }}
             onCanPlayThrough={handleVideoReady}
           />
@@ -90,7 +96,9 @@ function RotatablePhoto({
             style={mediaStyle}
             onLoad={(e) => {
               const img = e.currentTarget;
-              setAspectRatio(img.naturalWidth / img.naturalHeight);
+              const raw = img.naturalWidth / img.naturalHeight;
+              setAspectRatio(raw);
+              onAspectRatio?.(raw);
               handleLoad();
             }}
           />
@@ -206,6 +214,7 @@ function PhotoTile({
   objectFit = "contain",
   selected = false,
   onToggleSelect,
+  spanLandscapeFullWidth = false,
 }: {
   photo: Photo;
   light: boolean;
@@ -218,20 +227,30 @@ function PhotoTile({
   objectFit?: "contain" | "cover";
   selected?: boolean;
   onToggleSelect?: () => void;
+  spanLandscapeFullWidth?: boolean;
 }) {
+  const [rawRatio, setRawRatio] = useState<number | null>(null);
+  const upright = photo.rotation % 180 === 0;
+  const effectiveRatio = rawRatio !== null ? (upright ? rawRatio : 1 / rawRatio) : null;
+  const isLandscape = effectiveRatio !== null && effectiveRatio > 1.15;
+
   return (
     <div
       onClick={onSelect}
       className={`group relative flex min-h-0 min-w-0 cursor-pointer items-center justify-center overflow-hidden rounded-3xl shadow-2xl shadow-black/50 transition-all ${
         light ? "bg-white" : "bg-black"
       } ${selected ? (light ? "ring-4 ring-blue-400" : "ring-4 ring-pink-400") : ""} ${className}`}
-      style={style}
+      style={{
+        ...style,
+        ...(spanLandscapeFullWidth && isLandscape ? { columnSpan: "all" as const } : {}),
+      }}
     >
       <RotatablePhoto
         photo={photo}
         className={natural ? "" : `h-full w-full object-${objectFit}`}
         natural={natural}
         fitHeight={fitHeight}
+        onAspectRatio={natural ? setRawRatio : undefined}
       />
 
       <button
@@ -520,6 +539,8 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
     : photos.length > 0 && photos.length <= 3
       ? photos.length
       : masonryCols;
+  const rows = Math.max(1, Math.ceil((photos.length || 1) / cols));
+  const fitGrid = !isNarrow && !pinterestMode;
   const currentPhoto = photos[currentIndex];
   const masonryRef = useRef<HTMLDivElement>(null);
   const [capturing, setCapturing] = useState(false);
@@ -540,11 +561,31 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
 
   return (
     <>
-      <div className="relative -mt-7 w-full sm:mt-4">
+      <div
+        className={`relative w-full ${showSingle ? "-mt-7 sm:mt-4" : "mt-4 sm:mt-8"} ${
+          fitGrid ? "min-h-0 flex-1 flex flex-col" : ""
+        }`}
+      >
         {loading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center py-10">
-            <div className="aspect-[2/3] w-[82%] sm:w-[70%] max-w-md rounded-3xl skeleton-shimmer"></div>
-          </div>
+          isNarrow ? (
+            <div className="absolute inset-0 z-20 flex items-center justify-center py-10">
+              <div className="aspect-[2/3] w-[82%] sm:w-[70%] max-w-md rounded-3xl skeleton-shimmer"></div>
+            </div>
+          ) : (
+            <div className="absolute inset-x-0 top-0 z-20 flex justify-center pt-2">
+              <div
+                className={`flex items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-medium shadow-lg backdrop-blur-sm ${
+                  light ? "border-blue-300/60 bg-white/90 text-gray-700" : "border-pink-300/40 bg-black/80 text-white"
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="h-4 w-4 animate-spin">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" opacity="0.25" />
+                  <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+                Loading photos…
+              </div>
+            </div>
+          )
         )}
 
         {showSingle ? (
@@ -622,8 +663,11 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
         ) : !pinterestMode ? (
           <div
             ref={masonryRef}
-            className={`mx-auto grid w-full max-w-6xl gap-3 sm:gap-4 transition-opacity duration-300 ${loading ? "opacity-30" : "opacity-100"}`}
-            style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+            className={`mx-auto grid min-h-0 w-full max-w-6xl flex-1 gap-3 sm:gap-4 ${photos.length <= 3 ? "sm:mt-6" : ""} transition-opacity duration-300 ${loading ? "opacity-30" : "opacity-100"}`}
+            style={{
+              gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+              gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
+            }}
           >
             {photos.map((photo, i) => (
               <PhotoTile
@@ -635,7 +679,7 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
                 onToggleSelect={() => onToggleSelectPhoto(photo.id)}
                 onRotate={() => onRotatePhoto(photo.id)}
                 onSelect={() => setSelectedPhoto(photo)}
-                className="aspect-[4/5] w-full animate-zoom-out-in"
+                className="h-full w-full animate-zoom-out-in"
                 style={{ animationDelay: `${i * 0.08}s`, animationFillMode: "backwards" }}
               />
             ))}
@@ -657,6 +701,7 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
                   onToggleSelect={() => onToggleSelectPhoto(photo.id)}
                   onRotate={() => onRotatePhoto(photo.id)}
                   onSelect={() => setSelectedPhoto(photo)}
+                  spanLandscapeFullWidth={isNarrow && masonryCols <= 2}
                   className="mb-3 w-full break-inside-avoid animate-zoom-out-in"
                   style={{ animationDelay: `${i * 0.08}s`, animationFillMode: "backwards" }}
                 />
