@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
+import { forwardRef, useImperativeHandle, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { toPng } from "html-to-image";
+import { accentGradientClass } from "./LifeTimeRandomHeaderShared";
 
 export interface Photo {
   id: string;
@@ -36,13 +37,7 @@ function RotatablePhoto({
     videoRef.current?.play().catch(() => {});
   };
 
-  const loader = !loaded && (
-    <div className="absolute inset-0 z-10 flex items-center justify-center gap-3">
-      <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0s" }}></span>
-      <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.2s" }}></span>
-      <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.4s" }}></span>
-    </div>
-  );
+  const loader = !loaded && <div className="absolute inset-0 z-10 skeleton-shimmer"></div>;
 
   // Natural mode: size the tile to the media's real aspect ratio (scaled to
   // fill the column width) instead of forcing it into a fixed box, so no
@@ -184,9 +179,7 @@ function IconButton({
       aria-label={label}
       aria-busy={loading}
       className={`flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors disabled:cursor-wait ${
-        light
-          ? "border-pink-400/60 bg-white/70 text-gray-700 hover:border-pink-400 hover:bg-pink-100"
-          : "border-pink-300/50 bg-black/50 text-white hover:border-pink-300/90 hover:bg-pink-300/10"
+        light ? "border-blue-300/60 bg-white/70 text-gray-700 hover:border-blue-400 hover:bg-blue-100": "border-pink-300/50 bg-black/50 text-white hover:border-pink-300/90 hover:bg-pink-300/10"
       } ${loading ? "" : "cursor-pointer"}`}
     >
       {loading ? (
@@ -205,7 +198,6 @@ function PhotoTile({
   photo,
   light,
   onRotate,
-  onShare,
   onSelect,
   className = "",
   style,
@@ -218,7 +210,6 @@ function PhotoTile({
   photo: Photo;
   light: boolean;
   onRotate: () => void;
-  onShare: () => void | Promise<void>;
   onSelect: () => void;
   className?: string;
   style?: React.CSSProperties;
@@ -228,18 +219,6 @@ function PhotoTile({
   selected?: boolean;
   onToggleSelect?: () => void;
 }) {
-  const [sharing, setSharing] = useState(false);
-
-  const handleShare = async () => {
-    if (sharing) return;
-    setSharing(true);
-    try {
-      await onShare();
-    } finally {
-      setSharing(false);
-    }
-  };
-
   return (
     <div
       onClick={onSelect}
@@ -264,7 +243,7 @@ function PhotoTile({
         aria-label={selected ? "Deselect photo" : "Select photo"}
         className={`absolute top-2 left-2 sm:top-3 sm:left-3 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full border-2 backdrop-blur-sm cursor-pointer ${
           selected
-            ? "border-transparent bg-gradient-to-r from-pink-400 to-purple-400 text-white"
+            ? `border-transparent text-white ${accentGradientClass(light)}`
             : light
               ? "border-gray-400 bg-white/70"
               : "border-white/50 bg-black/40"
@@ -277,7 +256,7 @@ function PhotoTile({
         )}
       </button>
 
-      <div data-screenshot-ignore className="absolute bottom-1.5 left-1.5 sm:bottom-3 sm:left-3">
+      <div data-screenshot-ignore className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3">
         <IconButton onClick={onRotate} label="Rotate photo clockwise" light={light}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
             <path d="M21 12a9 9 0 1 1-3.2-6.9" />
@@ -285,22 +264,23 @@ function PhotoTile({
           </svg>
         </IconButton>
       </div>
-
-      <div data-screenshot-ignore className="absolute bottom-1.5 right-1.5 sm:bottom-3 sm:right-3">
-        <IconButton onClick={handleShare} label="Share photo" light={light} loading={sharing}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
-            <circle cx="18" cy="5" r="3" />
-            <circle cx="6" cy="12" r="3" />
-            <circle cx="18" cy="19" r="3" />
-            <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
-          </svg>
-        </IconButton>
-      </div>
     </div>
   );
 }
 
-function PhotoMaxView({ photo, onClose }: { photo: Photo; onClose: () => void }) {
+function PhotoMaxView({
+  photo,
+  onClose,
+  onPrev,
+  onNext,
+  showNav,
+}: {
+  photo: Photo;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+  showNav: boolean;
+}) {
   return createPortal(
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-2 sm:p-4"
@@ -318,6 +298,35 @@ function PhotoMaxView({ photo, onClose }: { photo: Photo; onClose: () => void })
           <path d="M18 6L6 18M6 6l12 12" />
         </svg>
       </button>
+
+      {showNav && (
+        <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onPrev();
+            }}
+            aria-label="Previous photo"
+            className="absolute left-2 sm:left-4 top-1/2 z-10 flex h-9 w-9 sm:h-11 sm:w-11 -translate-y-1/2 items-center justify-center rounded-full border-2 border-pink-300/50 bg-black/40 text-white backdrop-blur-sm cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 sm:h-6 sm:w-6">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onNext();
+            }}
+            aria-label="Next photo"
+            className="absolute right-2 sm:right-4 top-1/2 z-10 flex h-9 w-9 sm:h-11 sm:w-11 -translate-y-1/2 items-center justify-center rounded-full border-2 border-pink-300/50 bg-black/40 text-white backdrop-blur-sm cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 sm:h-6 sm:w-6">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        </>
+      )}
 
       <div
         className="relative flex items-center justify-center"
@@ -345,11 +354,11 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-export async function captureCollage(node: HTMLElement, light: boolean) {
+async function composeCollage(node: HTMLElement, light: boolean): Promise<Blob> {
   const backgroundColor = light ? "#ffffff" : "#000000";
   const collageDataUrl = await toPng(node, {
     backgroundColor,
-    pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+    pixelRatio: 3,
     includeQueryParams: true,
     filter: (el) => !(el instanceof Element) || !el.hasAttribute("data-screenshot-ignore"),
   });
@@ -361,7 +370,7 @@ export async function captureCollage(node: HTMLElement, light: boolean) {
   canvas.width = collageImg.width + margin * 2;
   canvas.height = collageImg.height + titleHeight + margin * 2;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+  if (!ctx) throw new Error("Canvas 2D context unavailable");
 
   ctx.fillStyle = backgroundColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -405,30 +414,49 @@ export async function captureCollage(node: HTMLElement, light: boolean) {
 
   ctx.drawImage(collageImg, margin, margin + titleHeight);
 
-  const dataUrl = canvas.toDataURL("image/png");
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Failed to encode image"))), "image/png");
+  });
+}
+
+function collageFileName() {
+  return `daksh-vanshika-${Date.now()}.png`;
+}
+
+function downloadBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = dataUrl;
-  a.download = `daksh-vanshika-${Date.now()}.png`;
+  a.href = url;
+  a.download = fileName;
   document.body.appendChild(a);
   a.click();
   a.remove();
+  URL.revokeObjectURL(url);
 }
 
-export async function sharePhoto(photo: Photo) {
-  try {
-    const res = await fetch(photo.src);
-    const blob = await res.blob();
-    const file = new File([blob], photo.name, { type: blob.type });
+export async function downloadCollage(node: HTMLElement, light: boolean) {
+  const blob = await composeCollage(node, light);
+  downloadBlob(blob, collageFileName());
+}
 
-    if (navigator.canShare?.({ files: [file] })) {
+export async function shareCollage(node: HTMLElement, light: boolean) {
+  const blob = await composeCollage(node, light);
+  const fileName = collageFileName();
+  const file = new File([blob], fileName, { type: "image/png" });
+
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
       await navigator.share({ files: [file] });
       return;
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
     }
-  } catch (err) {
-    if (err instanceof DOMException && err.name === "AbortError") return;
-    console.error("Share failed:", err);
   }
-  window.open(photo.src, "_blank");
+  downloadBlob(blob, fileName);
+}
+
+export interface LifeTimeRandomSlidesHandle {
+  captureScreenshot: (mode: "share" | "download") => Promise<void>;
 }
 
 interface LifeTimeRandomSlidesProps {
@@ -446,6 +474,8 @@ interface LifeTimeRandomSlidesProps {
   onRotatePhoto: (id: string) => void;
   goPrev: () => void;
   goNext: () => void;
+  onMaxViewPrev: () => void;
+  onMaxViewNext: () => void;
   onTouchStart: (e: React.TouchEvent) => void;
   onTouchMove: (e: React.TouchEvent) => void;
   onTouchEnd: () => void;
@@ -457,7 +487,7 @@ interface LifeTimeRandomSlidesProps {
   masonryCols: number;
 }
 
-export default function LifeTimeRandomSlides({
+const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRandomSlidesProps>(function LifeTimeRandomSlides({
   photos,
   batch,
   currentIndex,
@@ -472,6 +502,8 @@ export default function LifeTimeRandomSlides({
   onRotatePhoto,
   goPrev,
   goNext,
+  onMaxViewPrev,
+  onMaxViewNext,
   onTouchStart,
   onTouchMove,
   onTouchEnd,
@@ -481,18 +513,32 @@ export default function LifeTimeRandomSlides({
   selectedIds,
   onToggleSelectPhoto,
   masonryCols,
-}: LifeTimeRandomSlidesProps) {
+}, ref) {
   const rawCols = Math.ceil(Math.sqrt(photos.length || 1));
   const cols = isNarrow ? Math.min(rawCols, 2) : photos.length > 0 && photos.length <= 3 ? photos.length : rawCols;
   const currentPhoto = photos[currentIndex];
   const masonryRef = useRef<HTMLDivElement>(null);
   const [capturing, setCapturing] = useState(false);
 
+  useImperativeHandle(ref, () => ({
+    captureScreenshot: async (mode) => {
+      if (!masonryRef.current || capturing) return;
+      setCapturing(true);
+      try {
+        await (mode === "share" ? shareCollage : downloadCollage)(masonryRef.current, light);
+      } catch (err) {
+        console.error("Screenshot failed:", err);
+      } finally {
+        setCapturing(false);
+      }
+    },
+  }));
+
   const handleScreenshot = async () => {
     if (!masonryRef.current || capturing) return;
     setCapturing(true);
     try {
-      await captureCollage(masonryRef.current, light);
+      await downloadCollage(masonryRef.current, light);
     } catch (err) {
       console.error("Screenshot failed:", err);
     } finally {
@@ -502,12 +548,10 @@ export default function LifeTimeRandomSlides({
 
   return (
     <>
-      <div className="relative mt-4 w-full sm:mt-4">
+      <div className="relative -mt-7 w-full sm:mt-4">
         {loading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center gap-2 py-10">
-            <span className="h-2.5 w-2.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0s" }}></span>
-            <span className="h-2.5 w-2.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.2s" }}></span>
-            <span className="h-2.5 w-2.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.4s" }}></span>
+          <div className="absolute inset-0 z-20 flex items-center justify-center py-10">
+            <div className="aspect-[2/3] w-[82%] sm:w-[70%] max-w-md rounded-3xl skeleton-shimmer"></div>
           </div>
         )}
 
@@ -527,7 +571,6 @@ export default function LifeTimeRandomSlides({
                 selected={selectedIds.has(currentPhoto.id)}
                 onToggleSelect={() => onToggleSelectPhoto(currentPhoto.id)}
                 onRotate={() => onRotatePhoto(currentPhoto.id)}
-                onShare={() => sharePhoto(currentPhoto)}
                 onSelect={() => onPhotoTap(currentPhoto)}
                 className="aspect-[2/3] w-[82%] sm:w-[70%] max-w-md animate-zoom-out-in"
                 style={cardDragStyle}
@@ -598,7 +641,6 @@ export default function LifeTimeRandomSlides({
                 selected={selectedIds.has(photo.id)}
                 onToggleSelect={() => onToggleSelectPhoto(photo.id)}
                 onRotate={() => onRotatePhoto(photo.id)}
-                onShare={() => sharePhoto(photo)}
                 onSelect={() => setSelectedPhoto(photo)}
                 className="aspect-[4/5] w-full animate-zoom-out-in"
                 style={{ animationDelay: `${i * 0.08}s`, animationFillMode: "backwards" }}
@@ -607,15 +649,13 @@ export default function LifeTimeRandomSlides({
           </div>
         ) : (
           <div className="relative w-full">
-            {photos.length > 3 && (
+            {!isNarrow && (
               <button
                 onClick={handleScreenshot}
                 disabled={capturing}
                 aria-label="Screenshot collage"
                 className={`absolute -top-2 right-0 z-10 flex h-9 items-center gap-1.5 rounded-full border-2 px-3 text-xs font-medium backdrop-blur-sm transition-colors disabled:opacity-60 cursor-pointer ${
-                  light
-                    ? "border-pink-400/60 bg-white/80 text-gray-700 hover:border-pink-400 hover:bg-pink-100"
-                    : "border-pink-300/50 bg-black/60 text-white hover:border-pink-300/90 hover:bg-pink-300/10"
+                  light ? "border-blue-300/60 bg-white/80 text-gray-700 hover:border-blue-400 hover:bg-blue-100": "border-pink-300/50 bg-black/60 text-white hover:border-pink-300/90 hover:bg-pink-300/10"
                 }`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -639,7 +679,6 @@ export default function LifeTimeRandomSlides({
                   selected={selectedIds.has(photo.id)}
                   onToggleSelect={() => onToggleSelectPhoto(photo.id)}
                   onRotate={() => onRotatePhoto(photo.id)}
-                  onShare={() => sharePhoto(photo)}
                   onSelect={() => setSelectedPhoto(photo)}
                   className="mb-3 w-full break-inside-avoid animate-zoom-out-in"
                   style={{ animationDelay: `${i * 0.08}s`, animationFillMode: "backwards" }}
@@ -651,8 +690,16 @@ export default function LifeTimeRandomSlides({
       </div>
 
       {selectedPhoto && (
-        <PhotoMaxView photo={selectedPhoto} onClose={() => setSelectedPhoto(null)} />
+        <PhotoMaxView
+          photo={selectedPhoto}
+          onClose={() => setSelectedPhoto(null)}
+          onPrev={onMaxViewPrev}
+          onNext={onMaxViewNext}
+          showNav={photos.length > 1}
+        />
       )}
     </>
   );
-}
+});
+
+export default LifeTimeRandomSlides;
