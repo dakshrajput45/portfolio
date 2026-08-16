@@ -54,7 +54,7 @@ export default function LifeTimeRandom({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sharingSelected, setSharingSelected] = useState(false);
   const [pinterestMode, setPinterestMode] = useState(false);
-  const [masonryCols, setMasonryCols] = useState(3);
+  const [masonryCols, setMasonryCols] = useState(2);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showBackHint, setShowBackHint] = useState(false);
   const touchStartX = useRef<number | null>(null);
