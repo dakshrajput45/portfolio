@@ -224,7 +224,7 @@ function PhotoTile({
       onClick={onSelect}
       className={`group relative flex min-h-0 min-w-0 cursor-pointer items-center justify-center overflow-hidden rounded-3xl shadow-2xl shadow-black/50 transition-all ${
         light ? "bg-white" : "bg-black"
-      } ${selected ? "ring-4 ring-pink-400" : ""} ${className}`}
+      } ${selected ? (light ? "ring-4 ring-blue-400" : "ring-4 ring-pink-400") : ""} ${className}`}
       style={style}
     >
       <RotatablePhoto
@@ -515,7 +515,11 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
   masonryCols,
 }, ref) {
   const rawCols = Math.ceil(Math.sqrt(photos.length || 1));
-  const cols = isNarrow ? Math.min(rawCols, 2) : photos.length > 0 && photos.length <= 3 ? photos.length : rawCols;
+  const cols = isNarrow
+    ? Math.min(rawCols, 2)
+    : photos.length > 0 && photos.length <= 3
+      ? photos.length
+      : masonryCols;
   const currentPhoto = photos[currentIndex];
   const masonryRef = useRef<HTMLDivElement>(null);
   const [capturing, setCapturing] = useState(false);
@@ -533,18 +537,6 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
       }
     },
   }));
-
-  const handleScreenshot = async () => {
-    if (!masonryRef.current || capturing) return;
-    setCapturing(true);
-    try {
-      await downloadCollage(masonryRef.current, light);
-    } catch (err) {
-      console.error("Screenshot failed:", err);
-    } finally {
-      setCapturing(false);
-    }
-  };
 
   return (
     <>
@@ -627,8 +619,9 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
               </>
             )}
           </div>
-        ) : !pinterestMode && photos.length <= 3 ? (
+        ) : !pinterestMode ? (
           <div
+            ref={masonryRef}
             className={`mx-auto grid w-full max-w-6xl gap-3 sm:gap-4 transition-opacity duration-300 ${loading ? "opacity-30" : "opacity-100"}`}
             style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
           >
@@ -649,25 +642,9 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
           </div>
         ) : (
           <div className="relative w-full">
-            {!isNarrow && (
-              <button
-                onClick={handleScreenshot}
-                disabled={capturing}
-                aria-label="Screenshot collage"
-                className={`absolute -top-2 right-0 z-10 flex h-9 items-center gap-1.5 rounded-full border-2 px-3 text-xs font-medium backdrop-blur-sm transition-colors disabled:opacity-60 cursor-pointer ${
-                  light ? "border-blue-300/60 bg-white/80 text-gray-700 hover:border-blue-400 hover:bg-blue-100": "border-pink-300/50 bg-black/60 text-white hover:border-pink-300/90 hover:bg-pink-300/10"
-                }`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                  <circle cx="12" cy="13" r="4" />
-                </svg>
-                {capturing ? "Capturing…" : "Screenshot"}
-              </button>
-            )}
             <div
               ref={masonryRef}
-              className={`w-full pt-10 transition-opacity duration-300 ${loading ? "opacity-30" : "opacity-100"}`}
+              className={`w-full transition-opacity duration-300 ${loading ? "opacity-30" : "opacity-100"}`}
               style={{ columnCount: masonryCols, columnGap: "0.75rem" }}
             >
               {photos.map((photo, i) => (
