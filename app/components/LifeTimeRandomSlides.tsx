@@ -37,13 +37,7 @@ function RotatablePhoto({
     videoRef.current?.play().catch(() => {});
   };
 
-  const loader = !loaded && (
-    <div className="absolute inset-0 z-10 flex items-center justify-center gap-3">
-      <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0s" }}></span>
-      <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.2s" }}></span>
-      <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.4s" }}></span>
-    </div>
-  );
+  const loader = !loaded && <div className="absolute inset-0 z-10 skeleton-shimmer"></div>;
 
   // Natural mode: size the tile to the media's real aspect ratio (scaled to
   // fill the column width) instead of forcing it into a fixed box, so no
@@ -524,10 +518,8 @@ const LifeTimeRandomSlides = forwardRef<LifeTimeRandomSlidesHandle, LifeTimeRand
     <>
       <div className="relative mt-4 w-full sm:mt-4">
         {loading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center gap-2 py-10">
-            <span className="h-2.5 w-2.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0s" }}></span>
-            <span className="h-2.5 w-2.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.2s" }}></span>
-            <span className="h-2.5 w-2.5 rounded-full bg-pink-300 animate-dot-pulse" style={{ animationDelay: "0.4s" }}></span>
+          <div className="absolute inset-0 z-20 flex items-center justify-center py-10">
+            <div className="h-10 w-40 rounded-2xl skeleton-shimmer"></div>
           </div>
         )}
 
