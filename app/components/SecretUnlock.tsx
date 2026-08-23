@@ -8,6 +8,7 @@ import LifeTimeRandom from "./LifeTimeRandom";
 import RotatableImage from "./RotatableImage";
 import photosData from "../data/photos.json";
 import { proxiedSrc, isVideoSrc } from "../lib/proxiedSrc";
+import { isValidAccessCode } from "../lib/accessCode";
 
 const photos = photosData.photos;
 const backgrounds = photosData.backgrounds;
@@ -64,6 +65,16 @@ export default function SecretUnlock() {
   const [videoFailed, setVideoFailed] = useState(false);
   const [showLifeTimeRandom, setShowLifeTimeRandom] = useState(false);
   const [lifeTimeRandomCode, setLifeTimeRandomCode] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const codeParam = params.get("code");
+    if (codeParam && isValidAccessCode(codeParam)) {
+      setLifeTimeRandomCode(codeParam);
+      setShowLifeTimeRandom(true);
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
 
   useEffect(() => {
     if (!backgrounds.collageBackgroundVideo.src) return;

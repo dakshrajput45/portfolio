@@ -204,8 +204,15 @@ export default function LifeTimeRandom({
         })
       );
 
+      const shareLink = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(accessCode)}`;
+
       if (navigator.canShare?.({ files })) {
-        await navigator.share({ files, title: "Daksh & Vanshika 💕", text: "Daksh & Vanshika 💕" });
+        await navigator.share({
+          files,
+          title: "Daksh & Vanshika 💕",
+          text: `Daksh & Vanshika 💕\nOpen it directly: ${shareLink}`,
+          url: shareLink,
+        });
         setSharingSelected(false);
         return;
       }
