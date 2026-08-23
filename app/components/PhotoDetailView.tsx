@@ -177,13 +177,13 @@ export default function PhotoDetailView({ index, onClose }: PhotoDetailViewProps
 
       {/* Text - bottom on mobile, opposite side of photo on desktop */}
       <div
-        className={`relative z-10 flex flex-1 md:h-full w-full md:w-1/2 flex-col items-center justify-start gap-4 overflow-y-auto px-8 py-10 text-center ${photo.background ? "" : "bg-black"}`}
+        className={`relative z-10 flex flex-1 md:h-full w-full md:w-1/2 flex-col items-center justify-center gap-4 overflow-y-auto px-8 py-10 text-center ${photo.background ? "" : "bg-black"}`}
       >
-        <div className="flex flex-col items-center gap-2 animate-float-text">
-          <h2 className="font-sans text-2xl sm:text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text">
+        <div className="flex flex-col items-center gap-3 max-w-lg rounded-3xl border border-white/10 bg-black/30 px-6 py-6 backdrop-blur-md shadow-xl shadow-black/40 animate-float-text">
+          <h2 className="font-sans text-2xl sm:text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
             Memory #{index + 1}
           </h2>
-          <p className="max-w-lg text-left text-base sm:text-lg leading-relaxed text-white">
+          <p className="text-center text-base sm:text-lg leading-relaxed text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.8)]">
             {photo.caption}
           </p>
         </div>
