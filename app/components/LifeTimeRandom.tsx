@@ -210,7 +210,7 @@ export default function LifeTimeRandom({
         await navigator.share({
           files,
           title: "Daksh & Vanshika 💕",
-          text: `Daksh & Vanshika 💕\nOpen it directly: ${shareLink}`,
+          text: `Daksh & Vanshika 💕\nfor more of us go on to: `,
           url: shareLink,
         });
         setSharingSelected(false);
