@@ -136,6 +136,7 @@ export async function GET(request: NextRequest) {
     name: f.name,
     src: `/api/drive-media?id=${f.id}&code=${code}`,
     isVideo: f.mimeType.startsWith("video/"),
+    createdTime: f.createdTime,
   }));
 
   return Response.json({ photos, total: files.length });
