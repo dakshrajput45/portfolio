@@ -205,7 +205,7 @@ export default function LifeTimeRandom({
       );
 
       if (navigator.canShare?.({ files })) {
-        await navigator.share({ files });
+        await navigator.share({ files, title: "Daksh & Vanshika 💕", text: "Daksh & Vanshika 💕" });
         setSharingSelected(false);
         return;
       }
@@ -460,7 +460,7 @@ export default function LifeTimeRandom({
           </div>
 
           <div
-            className={`flex-1 px-3 sm:px-4 sm:py-4 ${
+            className={`flex-1 px-3 sm:px-4 sm:pb-16 ${
               showSingle
                 ? "flex flex-col justify-center overflow-y-auto"
                 : fitGrid

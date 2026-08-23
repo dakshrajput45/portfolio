@@ -9,6 +9,24 @@ export interface Photo {
   src: string;
   isVideo: boolean;
   rotation: number;
+  createdTime: string;
+}
+
+function formatDateAdded(iso: string): string {
+  const d = new Date(iso);
+  const date = d.toLocaleDateString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  const time = d.toLocaleTimeString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return `${date}, ${time}`;
 }
 
 function RotatablePhoto({
@@ -92,8 +110,10 @@ function RotatablePhoto({
           <img
             src={src}
             alt={photo.name}
+            draggable={false}
+            onContextMenu={(e) => e.preventDefault()}
             className={mediaClassName}
-            style={mediaStyle}
+            style={{ ...mediaStyle, WebkitTouchCallout: "none" }}
             onLoad={(e) => {
               const img = e.currentTarget;
               const raw = img.naturalWidth / img.naturalHeight;
@@ -117,10 +137,18 @@ function RotatablePhoto({
     return (
       <div className="relative flex h-full w-full items-center justify-center">
         {photo.isVideo ? (
-          <video ref={videoRef} src={src} muted={muted} controls={controls} loop playsInline className={className} style={style} onCanPlayThrough={handleVideoReady} />
+          <video ref={videoRef} src={src} muted={muted} controls={controls} loop playsInline className={className} style={style} onCanPlayThrough={handleVideoReady} onContextMenu={(e) => e.preventDefault()} />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt={photo.name} className={className} style={style} onLoad={handleLoad} />
+          <img
+            src={src}
+            alt={photo.name}
+            draggable={false}
+            onContextMenu={(e) => e.preventDefault()}
+            className={className}
+            style={{ ...style, WebkitTouchCallout: "none" }}
+            onLoad={handleLoad}
+          />
         )}
         {loader}
       </div>
@@ -148,14 +176,17 @@ function RotatablePhoto({
           className={`absolute top-1/2 left-1/2 ${className}`}
           style={rotatedStyle}
           onCanPlayThrough={handleVideoReady}
+          onContextMenu={(e) => e.preventDefault()}
         />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={src}
           alt={photo.name}
+          draggable={false}
+          onContextMenu={(e) => e.preventDefault()}
           className={`absolute top-1/2 left-1/2 ${className}`}
-          style={rotatedStyle}
+          style={{ ...rotatedStyle, WebkitTouchCallout: "none" }}
           onLoad={handleLoad}
         />
       )}
@@ -233,11 +264,39 @@ function PhotoTile({
   const upright = photo.rotation % 180 === 0;
   const effectiveRatio = rawRatio !== null ? (upright ? rawRatio : 1 / rawRatio) : null;
   const isLandscape = effectiveRatio !== null && effectiveRatio > 1.15;
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressFired = useRef(false);
+
+  const clearLongPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+  const startLongPress = () => {
+    longPressFired.current = false;
+    clearLongPress();
+    longPressTimer.current = setTimeout(() => {
+      longPressFired.current = true;
+      onToggleSelect?.();
+    }, 500);
+  };
 
   return (
     <div
-      onClick={onSelect}
-      className={`group relative flex min-h-0 min-w-0 cursor-pointer items-center justify-center overflow-hidden rounded-3xl shadow-2xl shadow-black/50 transition-all ${
+      onClick={() => {
+        if (longPressFired.current) {
+          longPressFired.current = false;
+          return;
+        }
+        onSelect();
+      }}
+      onPointerDown={startLongPress}
+      onPointerUp={clearLongPress}
+      onPointerLeave={clearLongPress}
+      onPointerCancel={clearLongPress}
+      onContextMenu={(e) => e.preventDefault()}
+      className={`group relative flex min-h-0 min-w-0 cursor-pointer items-center justify-center overflow-hidden rounded-3xl shadow-2xl shadow-black/50 transition-all select-none ${
         light ? "bg-white" : "bg-black"
       } ${selected ? (light ? "ring-4 ring-blue-400" : "ring-4 ring-pink-400") : ""} ${className}`}
       style={{
@@ -275,7 +334,16 @@ function PhotoTile({
         )}
       </button>
 
-      <div data-screenshot-ignore className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3">
+      <div
+        data-screenshot-ignore
+        className={`absolute bottom-2 left-2 sm:bottom-3 sm:left-3 rounded-full border-2 px-2 py-1 text-[10px] sm:text-xs font-medium backdrop-blur-sm ${
+          light ? "border-blue-300/60 bg-white/70 text-gray-700" : "border-pink-300/50 bg-black/50 text-white"
+        }`}
+      >
+        {formatDateAdded(photo.createdTime)}
+      </div>
+
+      <div data-screenshot-ignore className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3">
         <IconButton onClick={onRotate} label="Rotate photo clockwise" light={light}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
             <path d="M21 12a9 9 0 1 1-3.2-6.9" />
