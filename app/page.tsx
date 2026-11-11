@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import SecretUnlock from "./components/SecretUnlock";
+import Countdown from "./components/Countdown";
 
 interface Particle {
   left: number;
@@ -79,8 +80,10 @@ export default function Home() {
         {/* Hi Cutie with Emoji - Hover Animation - Absolutely Centered */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-fade-in-scale group cursor-pointer flex flex-col items-center gap-6">
           <h1 className="font-sans text-4xl sm:text-7xl md:text-7xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 animate-shimmer-text flex items-center gap-3 md:gap-4 transition-transform duration-300 group-hover:scale-110 whitespace-nowrap">
-            Hi cutie 💖
+            Hi Tulip 💖
           </h1>
+
+          <Countdown />
 
           <SecretUnlock />
         </div>
