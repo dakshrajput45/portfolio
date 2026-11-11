@@ -462,7 +462,7 @@ async function composeCollage(node: HTMLElement, light: boolean): Promise<Blob> 
   ctx.fillStyle = backgroundColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const title = "Daksh & Vanshika 💕";
+  const title = "Daksh & Tulip 💕";
   ctx.font = "700 32px system-ui, -apple-system, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -507,7 +507,7 @@ async function composeCollage(node: HTMLElement, light: boolean): Promise<Blob> 
 }
 
 function collageFileName() {
-  return `daksh-vanshika-${Date.now()}.png`;
+  return `daksh-tulip-${Date.now()}.png`;
 }
 
 function downloadBlob(blob: Blob, fileName: string) {

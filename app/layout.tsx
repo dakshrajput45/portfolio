@@ -14,12 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Vani",
-  description: "Vani",
+  title: "Tulip",
+  description: "Tulip",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Vani",
+    title: "Tulip",
   },
   icons: {
     icon: "/icons/icon-192.png",
