@@ -1,4 +1,4 @@
-const CACHE_NAME = "tulip-cache-v1";
+const CACHE_NAME = "tulip-cache-v2";
 const PRECACHE_URLS = ["/", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
